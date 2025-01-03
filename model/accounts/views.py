@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .serializers import RegisterUserSerializer, DeleteAccountSerializer, UpdateUserSerializer
+from .serializers import RegisterUserSerializer, DeleteAccountSerializer, UpdateUserSerializer, PasswordChangeSerializer
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -47,11 +47,21 @@ class DeleteAccountView(APIView):
 
 class UpdateUserView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
-    
+
     def put(self, request):
         user = request.user
         serializer = UpdateUserSerializer(user, data=request.data, partial=True) 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "비밀번호가 변경되었습니다."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
