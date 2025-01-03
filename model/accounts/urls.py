@@ -9,6 +9,7 @@ from. import views
 urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("signup/", views.UserAPIView.as_view()),
-    path("<str:username>/", views.UserAPIView.as_view()),
+    path("signup/", views.SignupView.as_view()),
+    path("logout/", views.LogoutView.as_view()),
+    path("<str:username>/", views.SignupView.as_view()),
 ]
