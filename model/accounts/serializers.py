@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group, Permission
 from rest_framework.serializers import Serializer, CharField
 from django.contrib.auth import authenticate
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
     groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
@@ -50,3 +50,14 @@ class DeleteAccountSerializer(Serializer):
         if not authenticate(username=user.username, password=data['password']):
             raise serializers.ValidationError({"password": "비밀번호가 올바르지 않습니다."})
         return data
+    
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'nickname', 'birthday', 'phone_number']
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
