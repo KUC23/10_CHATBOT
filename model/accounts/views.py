@@ -5,8 +5,28 @@ from rest_framework.views import APIView
 from .serializers import RegisterUserSerializer, DeleteAccountSerializer, UpdateUserSerializer, PasswordChangeSerializer
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import UpdateAPIView
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username_or_phone = request.data.get('username')  
+        password = request.data.get('password')
+
+        user = authenticate(request, username=username_or_phone, password=password)
+
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 class SignupView(APIView):
     def get(self, request, username):

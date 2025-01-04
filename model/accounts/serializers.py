@@ -15,11 +15,11 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
         extra_kwargs = {
-            'email': {'required': True},
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-            'nickname': {'required': True},
-            'birthday': {'required': True},
+            'email': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'nickname': {'required': False},
+            'birthday': {'required': False},
             'phone_number': {'required': True},
             'is_active': {'required': False, 'default': True},
         }
