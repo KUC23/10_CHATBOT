@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import json
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,11 +40,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.kakao', 
+    'allauth.socialaccount.providers.discord',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'accounts',
     'materials',
+    'socials'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'final_project.urls'
@@ -89,6 +99,7 @@ DATABASES = {
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.UsernameOrPhoneBackend',  
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 
@@ -148,3 +159,36 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SITE_ID = 1
+
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_REQUIRED = True  
+
+# LOGIN_REDIRECT_URL = '/'  
+# LOGOUT_REDIRECT_URL = '/'
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+SECRETS_PATH = BASE_DIR / "secrets.json"
+
+with open(SECRETS_PATH) as f:
+    secrets = json.load(f)
+
+SOCIALACCOUNT_PROVIDERS = {
+    'kakao': {
+        'APP': {
+            'client_id': secrets["kakao_client_id"],
+            'secret': secrets["kakao_client_secret"],
+            'key': '',
+        }
+    },
+    'discord': {
+        'APP': {
+            'client_id': secrets["discord_client_id"],
+            'secret': secrets["discord_client_secret"],
+        },
+        'SCOPE':['identify',]
+    }
+}
+
