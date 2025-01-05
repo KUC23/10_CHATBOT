@@ -26,7 +26,8 @@ class LoginView(APIView):
                 "access": str(refresh.access_token),
             }, status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "비밀번호 또는 사용자 이름이 잘못되었습니다."},
+                        status=status.HTTP_401_UNAUTHORIZED)
 
 class SignupView(APIView):
     def get(self, request, username):
