@@ -337,3 +337,40 @@ endpoint: api/v1/socials/social-link-or-create/
     }
 }
 ```
+
+10. 카카오/디스코드 계정 연동
+endpoint: /socials/link-social-account/
+- request body
+```json
+```
+- response(성공, 200)
+```json
+```
+- response(실패, 401)
+```json
+```
+
+
+11. 연동한 카카오/디스코드 계정 확인
+endpoint: /socials/linked-social-accounts/
+- request body: 없음
+
+- response(성공, 200 Ok) 연동된 계정 있음
+```json
+{
+    "status": "success",
+    "linked_accounts": [
+        {
+            "provider": "discord", # or "kakao"
+            "social_id": "string"
+        }
+    ]
+}
+```
+- response(성공, 200 Ok) 연동된 계정 없음
+```json
+{
+    "is_social_connected": false,
+    "connected_social_providers": []
+}
+```

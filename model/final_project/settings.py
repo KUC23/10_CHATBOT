@@ -51,8 +51,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
     'accounts',
+    'socials',
     'materials',
-    'socials'
 ]
 
 MIDDLEWARE = [
@@ -169,12 +169,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SITE_ID = 1
 
+SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True  
 
-# LOGIN_REDIRECT_URL = '/'  
-# LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/'  
+LOGOUT_REDIRECT_URL = '/'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRETS_PATH = BASE_DIR / "secrets.json"
