@@ -15,8 +15,3 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.is_social_connected = True
         user.save()
         return user
-
-    def get_callback_url(self, request, socialaccount):
-        return reverse('socials:kakao_callback')
-        logger.debug(f"Generated callback URL: {callback_url}")
-        return callback_url

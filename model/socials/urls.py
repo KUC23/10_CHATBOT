@@ -3,10 +3,9 @@ from django.urls.conf import include
 from . import views
 from allauth.socialaccount.providers.kakao.views import OAuth2CallbackView
 
-app_name = "socials"
+
 
 urlpatterns = [
-    path('kakao/callback/', views.kakao_callback, name='kakao_callback'),
     path('', include("allauth.urls")),
     path('check-user/', views.CheckUserView.as_view(), name='check_user'),
     path('social-link-or-create/', views.SocialLinkOrCreateView.as_view(), name='social_link_or_create'),

@@ -407,12 +407,22 @@ endpoint: api/v1/socials/social-link-or-create/
 endpoint: api/v1/socials/link-social-account/
 - request body
 ```json
+{
+    "provider": "discord", #or 'kakao'
+    "social_id": "string"
+}
 ```
-- response(성공, 200)
+- response(성공, 200 Ok)
 ```json
+{
+    "message": "discord 계정이 성공적으로 연결되었습니다."
+}
 ```
-- response(실패, 401)
+- response(실패, 400 Bad request) 
 ```json
+{
+    "message": "이미 연결된 소셜 계정입니다."
+}
 ```
 
 
