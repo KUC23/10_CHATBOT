@@ -155,3 +155,27 @@ class GetLinkedSocialAccountsView(APIView):
             "is_social_connected": user.is_social_connected,
             "connected_social_providers": user.connected_social_providers,
         })
+
+
+class SetDefaultSocialProviderView(APIView):
+    """
+    사용자가 정보를 받을 기본 소셜 계정을 선택
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        provider = request.data.get('provider')
+
+        if provider not in request.user.connected_social_providers:
+            return Response({
+                "status": "error",
+                "message": "연결되지 않은 소셜 계정입니다."
+            }, status=400)
+
+        request.user.default_social_provider = provider
+        request.user.save()
+
+        return Response({
+            "status": "success",
+            "message": f"{provider} 계정이 기본 소셜 계정으로 설정되었습니다."
+        })

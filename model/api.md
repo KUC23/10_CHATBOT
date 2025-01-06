@@ -449,3 +449,25 @@ endpoint: api/v1/socials/linked-social-accounts/
     "connected_social_providers": []
 }
 ```
+
+12. 정보를 받을 소셜계정 선택
+- request body
+```json
+{
+    "provider": "discord" # or 'kakao'
+}
+```
+- response(성공, 200 Ok)
+```json
+{
+    "status": "success",
+    "message": "discord 계정이 기본 소셜 계정으로 설정되었습니다."
+}
+```
+- response(실패, 400 Bad reqeust)
+```json
+{
+    "status": "error",
+    "message": "연결되지 않은 소셜 계정입니다."
+}
+```

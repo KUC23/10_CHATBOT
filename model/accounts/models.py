@@ -30,6 +30,12 @@ class User(AbstractUser):
     is_social_connected = models.BooleanField(default=False)  
     connected_social_providers = models.JSONField(default=list, blank=True)
     categories = models.ManyToManyField(Category, blank=True, related_name="users")
+    default_social_provider = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="사용자가 기사를 받을 소셜 계정 provider"
+    )
 
     USERNAME_FIELD = 'username' 
     REQUIRED_FIELDS = ['phone_number']  
