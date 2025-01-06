@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Category
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group, Permission
 from rest_framework.serializers import Serializer, CharField
@@ -10,6 +10,9 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True)
     groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
     user_permissions = serializers.PrimaryKeyRelatedField(many=True, queryset=Permission.objects.all(), required=False)
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Category.objects.all(), required=True 
+    )
 
     class Meta:
         model = User
@@ -23,24 +26,31 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             'phone_number': {'required': True},
             'is_active': {'required': False, 'default': True},
         }
+
     def validate(self, data):
-        
         if data['password'] != data['password2']:
             raise serializers.ValidationError({
                 "password": "비밀번호가 일치하지 않습니다."
             })
         return data
-    
+
     def create(self, validated_data):
         groups = validated_data.pop('groups', [])
         user_permissions = validated_data.pop('user_permissions', [])
+        categories = validated_data.pop('categories', [])  
         validated_data.pop('password2')
         password = validated_data.pop('password')
+        
         user = User(**validated_data)
-        user.set_password(password) 
-        user.is_active = True  
+        user.set_password(password)
+        user.is_active = True
         user.save()
+
+        if categories:
+            user.categories.set(categories)
+
         return user
+
 
 class DeleteAccountSerializer(Serializer):
     password = CharField(write_only=True)
@@ -52,15 +62,26 @@ class DeleteAccountSerializer(Serializer):
         return data
     
 class UpdateUserSerializer(serializers.ModelSerializer):
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Category.objects.all(), required=False 
+    )
+
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'nickname', 'birthday', 'phone_number']
+        fields = ['email', 'first_name', 'last_name', 'nickname', 'birthday', 'phone_number', 'categories']  
     
-    def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+def update(self, instance, validated_data):
+    if 'categories' in validated_data:
+        categories = validated_data.pop('categories')
+        # 유효성 검사: 카테고리 ID
+        if not all(category in Category.objects.values_list('id', flat=True) for category in [cat.id for cat in categories]):
+            raise serializers.ValidationError("유효하지 않은 카테고리가 포함되어 있습니다.")
+        instance.categories.set(categories)
+
+    for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+    instance.save()
+    return instance
     
 
 class PasswordChangeSerializer(serializers.Serializer):
@@ -84,3 +105,9 @@ class PasswordChangeSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+    
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']

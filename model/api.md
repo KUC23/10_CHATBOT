@@ -36,6 +36,7 @@ endpoint: api/v1/accounts/signup/
   "phone_number": "01012345678"
   "password": "password123",
   "password2": "password123", #비밀번호 확인
+  "categories": [category pk] #관심사
 }
 ```
 - response(성공, 201 created)
@@ -44,6 +45,9 @@ endpoint: api/v1/accounts/signup/
     "id": 12,
     "groups": [],
     "user_permissions": [],
+    "categories": [
+        1
+    ],
     "last_login": null,
     "is_superuser": false,
     "username": "username",
@@ -158,8 +162,58 @@ endpoint: api/v1/accounts/delete/
     ]
 }
 ```
+5-1. 회원정보조회
+endpoint: api/v1/accounts/<str:username>/
+- request body
+없음
 
-5. 회원정보수정
+- response(성공, 200 Ok)
+```json
+{
+    "id": 2,
+    "groups": [],
+    "user_permissions": [],
+    "categories": [],
+    "last_login": null,
+    "is_superuser": false,
+    "username": "suho",
+    "is_staff": false,
+    "date_joined": "2025-01-03T04:28:37.667999Z",
+    "first_name": "su",
+    "last_name": "ho",
+    "nickname": "사람",
+    "birthday": "2000-01-01",
+    "gender": null,
+    "introduction": null,
+    "email": "su@human.com",
+    "phone_number": "01012345673",
+    "is_active": true,
+    "is_social_connected": false,
+    "connected_social_providers": []
+}
+```
+- response(실패, 404 Not found) 해당하는 유저 없음
+```json
+{
+    "detail": "No User matches the given query."
+}
+```
+
+- response(실패, 401 Unauthorized)
+```json
+{
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+        {
+            "token_class": "AccessToken",
+            "token_type": "access",
+            "message": "Token is invalid or expired"
+        }
+    ]
+}
+```
+5-2. 회원정보수정
 endpoint: api/v1/accounts/update/
 - request body
 ```json
@@ -169,7 +223,8 @@ endpoint: api/v1/accounts/update/
     "last_name": "eman",
     "nickname": "nick",
     "birthday": "2000-01-01",
-    "phone_number": "01012345678"
+    "phone_number": "01012345678",
+    "categories" : [category pk]
 }
 ```
 - response(성공, 200 ok)
@@ -180,7 +235,8 @@ endpoint: api/v1/accounts/update/
     "last_name": "eman",
     "nickname": "new_nickname",
     "birthday": "2000-01-01",
-    "phone_number": "01012345678"
+    "phone_number": "01012345678",
+    "categories" : [category pk]
 }
 ```
 - response(실패, 401 Unauthorized) 토큰불일치
@@ -197,6 +253,15 @@ endpoint: api/v1/accounts/update/
     ]
 }
 ```
+- response(실패, 400 bad request) 정보입력 오류
+```json
+{
+    "categories": [
+        "Expected a list of items but got type \"str\"."
+    ]
+}
+```
+
 6. 비밀번호변경
 endpoint: api/v1/accounts/password/change/
 - request body
@@ -339,7 +404,7 @@ endpoint: api/v1/socials/social-link-or-create/
 ```
 
 10. 카카오/디스코드 계정 연동
-endpoint: /socials/link-social-account/
+endpoint: api/v1/socials/link-social-account/
 - request body
 ```json
 ```
@@ -352,7 +417,7 @@ endpoint: /socials/link-social-account/
 
 
 11. 연동한 카카오/디스코드 계정 확인
-endpoint: /socials/linked-social-accounts/
+endpoint: api/v1/socials/linked-social-accounts/
 - request body: 없음
 
 - response(성공, 200 Ok) 연동된 계정 있음

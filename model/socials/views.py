@@ -4,7 +4,7 @@ from accounts.models import User
 from socials.models import CustomSocialAccount
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
-
+from django.http import JsonResponse
 
 class CheckUserView(APIView):
     """
@@ -125,3 +125,6 @@ class GetLinkedSocialAccountsView(APIView):
             "connected_social_providers": user.connected_social_providers,
         })
 
+
+def kakao_callback(request):
+    return JsonResponse({'message': 'Kakao callback successful!'})

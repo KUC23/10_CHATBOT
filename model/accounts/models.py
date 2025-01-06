@@ -2,6 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class User(AbstractUser):
     first_name = models.CharField(max_length=150, blank=True, null=True)
@@ -22,11 +27,12 @@ class User(AbstractUser):
         ]
     )
     is_active = models.BooleanField(default=True)
+    is_social_connected = models.BooleanField(default=False)  
+    connected_social_providers = models.JSONField(default=list, blank=True)
+    categories = models.ManyToManyField(Category, blank=True, related_name="users")
 
     USERNAME_FIELD = 'username' 
     REQUIRED_FIELDS = ['phone_number']  
-    is_social_connected = models.BooleanField(default=False)  
-    connected_social_providers = models.JSONField(default=list, blank=True)
 
 
 
