@@ -471,3 +471,42 @@ endpoint: api/v1/socials/linked-social-accounts/
     "message": "연결되지 않은 소셜 계정입니다."
 }
 ```
+13. 카테고리 조회
+- request body 없음
+- response(성공, 200 Ok)
+```json
+[
+    {
+        "id": 1,
+        "name": "Main"
+    },
+    {
+        "id": 2,
+        "name": "Technology"
+    },
+    {
+        "id": 3,
+        "name": "Business"
+    },
+    {
+        "id": 4,
+        "name": "Science"
+    },
+    {
+        "id": 5,
+        "name": "Health"
+    },
+    {
+        "id": 6,
+        "name": "Politics"
+    },
+    {
+        "id": 7,
+        "name": "Art"
+    },
+    {
+        "id": 8,
+        "name": "Sport"
+    }
+]
+```

@@ -86,3 +86,11 @@ class PasswordChangeView(APIView):
             serializer.save()
             return Response({"message": "비밀번호가 변경되었습니다."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryListView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        categories = Category.objects.all().values("id", "name")
+        return Response(list(categories))
