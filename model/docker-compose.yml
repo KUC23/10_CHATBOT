@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  
+      - ./db.sqlite3:/app/db.sqlite3 
+    env_file:
+      - .env  
+    environment:
+      DJANGO_SETTINGS_MODULE: "final_project.settings"  
+    command: python manage.py runserver 0.0.0.0:8000
+
