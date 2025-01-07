@@ -131,8 +131,11 @@ class LinkSocialAccountView(APIView):
         social_id = request.data.get('social_id')
         user = request.user
 
-        if CustomSocialAccount.objects.filter(user=user, provider=provider).exists():
-            return Response({"message": "이미 연결된 소셜 계정입니다."}, status=400)
+        if CustomSocialAccount.objects.filter(provider=provider, uid=social_id).exists():
+            return Response({
+                "status": "error",
+                "message": "이미 연결된 소셜 계정입니다."
+                }, status=400)
 
         CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
         if provider not in user.connected_social_providers:
