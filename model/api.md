@@ -33,7 +33,7 @@ endpoint: api/v1/accounts/signup/
 #필수요구정보
 {
   "username": "newuser",
-  "phone_number": "01012345678"
+  "phone_number": "01012345678",
   "password": "password123",
   "password2": "password123", #비밀번호 확인
   "categories": [category pk] #관심사

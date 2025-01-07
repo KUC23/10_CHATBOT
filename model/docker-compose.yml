@@ -6,10 +6,27 @@ services:
       - "8000:8000"
     volumes:
       - .:/app  
-      - ./db.sqlite3:/app/db.sqlite3 
     env_file:
       - .env  
+    depends_on:
+      - db
     environment:
       DJANGO_SETTINGS_MODULE: "final_project.settings"  
     command: python manage.py runserver 0.0.0.0:8000
+  
+  db:
+    image: postgres:16  
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}  
+      POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}  
+      POSTGRES_DB: final_project  
+    ports:
+      - "5432:5432"  
+    volumes:
+      - pg_data:/var/lib/postgresql/data  
+
+volumes:
+  pg_data:
 

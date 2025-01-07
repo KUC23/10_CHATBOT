@@ -94,8 +94,13 @@ WSGI_APPLICATION = 'final_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config("POSTGRES_DB"),
+        'USER': config("YOUR_POSTGRESQL_USERNAME"),
+        'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
+        'HOST': config("POSTGRES_HOST"), #docker로 실행 시
+        # 'HOST': "localhost", 
+        'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
@@ -176,7 +181,7 @@ SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True  
 
-LOGIN_REDIRECT_URL = '/api/v1//socials/linked-social-accounts/'
+LOGIN_REDIRECT_URL = '/api/v1/socials/linked-social-accounts/'
 LOGOUT_REDIRECT_URL = '/api/v1/accounts/login/'
 
 SECRET_KEY = config("SECRET_KEY")
@@ -197,28 +202,4 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['identify',]
     }
 }
-# BASE_DIR = Path(__file__).resolve().parent.parent
-# SECRETS_PATH = BASE_DIR / "secrets.json"
-
-# with open(SECRETS_PATH) as f:
-#     secrets = json.load(f)
-
-# SECRET_KEY = secrets["SECRET_KEY"]
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'kakao': {
-#         'APP': {
-#             'client_id': secrets["kakao_client_id"],
-#             'secret': secrets["kakao_client_secret"],
-#             'key': '',
-#         }
-#     },
-#     'discord': {
-#         'APP': {
-#             'client_id': secrets["discord_client_id"],
-#             'secret': secrets["discord_client_secret"],
-#         },
-#         'SCOPE':['identify',]
-#     }
-# }
 
