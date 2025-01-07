@@ -1,0 +1,7 @@
+{
+    "virtualenv_path": ".venv\\Scripts\\activate",
+    "python_script_path": "your_script.py",
+    "chrome_driver_path": "C:\\path\\to\\chromedriver.exe",
+    "webpage_url": "https://www.google.com"
+  }
+  
