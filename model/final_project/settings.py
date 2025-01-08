@@ -99,14 +99,15 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        # 'HOST': config("POSTGRES_HOST"), #docker로 실행 시
-        'HOST': "localhost", 
+        'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
+        # 'HOST': "localhost", 
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
 # Redis 설정
-REDIS_HOST = '127.0.0.1'
+REDIS_HOST = "redis"  ##docker로 실행 시
+# REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB = 1
 
@@ -122,8 +123,8 @@ CACHES = {
 }
 
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY = True
