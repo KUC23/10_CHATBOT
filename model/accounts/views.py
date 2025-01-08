@@ -94,3 +94,21 @@ class CategoryListView(APIView):
     def get(self, request):
         categories = Category.objects.all().values("id", "name")
         return Response(list(categories))
+
+    # def post(self, request):
+    #     if not request.user.is_authenticated:
+    #         return Response({"message": "로그인이 필요합니다."}, status=401)
+        
+    #     category_ids = request.data.get("categories", [])
+    #     if not isinstance(category_ids, list) or not category_ids:
+    #         return Response({"message": "관심사를 선택해주세요."}, status=400)
+
+    #     try:
+    #         categories = Category.objects.filter(id__in=category_ids)
+    #         if not categories.exists():
+    #             return Response({"message": "유효하지 않은 카테고리입니다."}, status=400)
+
+    #         request.user.categories.set(categories)  
+    #         return Response({"message": "관심사가 성공적으로 저장되었습니다."}, status=200)
+    #     except Exception as e:
+    #         return Response({"message": f"에러 발생: {str(e)}"}, status=500)

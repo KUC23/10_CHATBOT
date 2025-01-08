@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django_celery_beat',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -98,11 +99,36 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        'HOST': config("POSTGRES_HOST"), #docker로 실행 시
-        # 'HOST': "localhost", 
+        # 'HOST': config("POSTGRES_HOST"), #docker로 실행 시
+        'HOST': "localhost", 
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
+
+# Redis 설정
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 1
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_TASK_TIME_LIMIT = 600
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.UsernameOrPhoneBackend',  

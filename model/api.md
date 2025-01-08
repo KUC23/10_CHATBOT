@@ -97,7 +97,12 @@ endpoint: api/v1/accounts/signup/
 
 3. 로그아웃 요청
 endpoint: api/v1/accounts/logout/
-
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -127,6 +132,12 @@ endpoint: api/v1/accounts/logout/
 
 4. 회원탈퇴 요청
 endpoint: api/v1/accounts/delete/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -215,6 +226,12 @@ endpoint: api/v1/accounts/<str:username>/
 ```
 5-2. 회원정보수정
 endpoint: api/v1/accounts/update/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -264,6 +281,12 @@ endpoint: api/v1/accounts/update/
 
 6. 비밀번호변경
 endpoint: api/v1/accounts/password/change/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -327,7 +350,7 @@ endpoint: api/v1/socials/check-user/
     "message": "새 계정을 생성할 수 있습니다."
 }
 ```
-- response(성공, 200ok) 중복되는 이메일/전화번호가 있음(여전히200ok) ->사용자가 계정을 연동할지 새로운 계정을 생성할지 선택택
+- response(성공, 200ok) 중복되는 이메일/전화번호가 있음(여전히200ok) ->사용자가 계정을 연동할지 새로운 계정을 생성할지 선택
 ```json
 {
     "status": "exists",
@@ -405,6 +428,12 @@ endpoint: api/v1/socials/social-link-or-create/
 
 10. 카카오/디스코드 계정 연동
 endpoint: api/v1/socials/link-social-account/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -428,6 +457,12 @@ endpoint: api/v1/socials/link-social-account/
 
 11. 연동한 카카오/디스코드 계정 확인
 endpoint: api/v1/socials/linked-social-accounts/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body: 없음
 
 - response(성공, 200 Ok) 연동된 계정 있음
@@ -451,6 +486,13 @@ endpoint: api/v1/socials/linked-social-accounts/
 ```
 
 12. 정보를 받을 소셜계정 선택
+endpoint: api/v1/socials/default-social-accounts/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 ```json
 {
@@ -471,7 +513,8 @@ endpoint: api/v1/socials/linked-social-accounts/
     "message": "연결되지 않은 소셜 계정입니다."
 }
 ```
-13. 카테고리 조회
+13. 카테고리 조회 (GET)
+endpoints: api/v1/accounts/category/
 - request body 없음
 - response(성공, 200 Ok)
 ```json
@@ -510,3 +553,4 @@ endpoint: api/v1/socials/linked-social-accounts/
     }
 ]
 ```
+

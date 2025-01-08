@@ -1,5 +1,5 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from django.shortcuts import reverse
+
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     # 사용자 소셜계정 연동
@@ -15,3 +15,5 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.is_social_connected = True
         user.save()
         return user
+
+
