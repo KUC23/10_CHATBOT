@@ -1,4 +1,4 @@
-1. 로그인 요청 
+1. 로그인 요청 (POST)
 endpoint: api/v1/accounts/login/
 - request body
 ```json
@@ -26,7 +26,7 @@ username란에 핸드폰번호 입력으로도 로그인 가능
 {"detail":"비밀번호 또는 사용자 이름이 잘못되었습니다."}
 ```
 
-2. 회원가입 요청
+2. 회원가입 요청 (POST)
 endpoint: api/v1/accounts/signup/
 - request body
 ```json
@@ -95,7 +95,7 @@ endpoint: api/v1/accounts/signup/
 }
 ```
 
-3. 로그아웃 요청
+3. 로그아웃 요청 (POST)
 endpoint: api/v1/accounts/logout/
 - headers
 ```json
@@ -130,7 +130,7 @@ endpoint: api/v1/accounts/logout/
 }
 ```
 
-4. 회원탈퇴 요청
+4. 회원탈퇴 요청 (DELETE)
 endpoint: api/v1/accounts/delete/
 - headers
 ```json
@@ -173,7 +173,7 @@ endpoint: api/v1/accounts/delete/
     ]
 }
 ```
-5-1. 회원정보조회
+5-1. 회원정보조회 (GET)
 endpoint: api/v1/accounts/<str:username>/
 - request body
 없음
@@ -224,7 +224,7 @@ endpoint: api/v1/accounts/<str:username>/
     ]
 }
 ```
-5-2. 회원정보수정
+5-2. 회원정보수정 (PUT/PATCH)
 endpoint: api/v1/accounts/update/
 - headers
 ```json
@@ -279,7 +279,7 @@ endpoint: api/v1/accounts/update/
 }
 ```
 
-6. 비밀번호변경
+6. 비밀번호변경 (PUT)
 endpoint: api/v1/accounts/password/change/
 - headers
 ```json
@@ -334,7 +334,7 @@ endpoint: api/v1/accounts/password/change/
 }
 ```
 
-7. 소셜로그인 중복확인: 소셜계정으로 로그인 시도 시 소셜계정의 이메일/전화번호가 기존에 가입된 유저의 이메일/전화번호와 같은지 확인
+7. 소셜로그인 중복확인: 소셜계정으로 로그인 시도 시 소셜계정의 이메일/전화번호가 기존에 가입된 유저의 이메일/전화번호와 같은지 확인 (POST)
 endpoint: api/v1/socials/check-user/
 - request body
 ```json
@@ -362,7 +362,7 @@ endpoint: api/v1/socials/check-user/
 }
 ```
 
-8. 소셜로그인 중복계정 처리: link=연동/create_new=새  계정 생성
+8. 소셜로그인 중복계정 처리: link=연동/create_new=새  계정 생성 (POST)
 endpoint: api/v1/socials/social-link-or-create/
 - request body
 ```json
@@ -398,7 +398,7 @@ endpoint: api/v1/socials/social-link-or-create/
 }
 ```
 
-9. 소셜 회원가입 : **포스트맨에서 확인 불가**
+9. 소셜 회원가입 : **포스트맨에서 확인 불가** (POST)
 (사유: Django는 CSRF 보호 메커니즘이 있는데, OAuth2 인증 흐름에서는 CSRF 토큰을 사용 불가 ->CSRF관련 오류 발생) -> **예상되는 API구조임**
 - 카카오톡 회원가입 api/v1/socials/kakao/login/
 - 디스코드 회원가입 api/v1/socials/discord/login/
@@ -426,7 +426,7 @@ endpoint: api/v1/socials/social-link-or-create/
 }
 ```
 
-10. 카카오/디스코드 계정 연동
+10. 카카오/디스코드 계정 연동 (POST)
 endpoint: api/v1/socials/link-social-account/
 - headers
 ```json
@@ -455,7 +455,7 @@ endpoint: api/v1/socials/link-social-account/
 ```
 
 
-11. 연동한 카카오/디스코드 계정 확인
+11. 연동한 카카오/디스코드 계정 확인 (GET)
 endpoint: api/v1/socials/linked-social-accounts/
 - headers
 ```json
@@ -485,7 +485,7 @@ endpoint: api/v1/socials/linked-social-accounts/
 }
 ```
 
-12. 정보를 받을 소셜계정 선택
+12. 정보를 받을 소셜계정 선택 (POST)
 endpoint: api/v1/socials/default-social-accounts/
 - headers
 ```json
