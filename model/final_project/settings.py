@@ -15,6 +15,7 @@ from datetime import timedelta
 import json
 from pathlib import Path
 from decouple import config
+from celery import Celery
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -99,15 +100,15 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
-        # 'HOST': "localhost", 
+        # 'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
+        'HOST': "localhost", 
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
 # Redis 설정
-REDIS_HOST = "redis"  ##docker로 실행 시
-# REDIS_HOST = '127.0.0.1'
+# REDIS_HOST = "redis"  ##docker로 실행 시
+REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB = 1
 
@@ -130,6 +131,13 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_TIME_LIMIT = 600
+CELERY_TIMEZONE = 'Asia/Seoul'
+CELERY_BEAT_SCHEDULE = {
+    'fetch-news-every-day': {
+        'task': 'tasks.fetch_and_store_news',
+        'schedule': timedelta(days=1),  
+    },
+}
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.UsernameOrPhoneBackend',  

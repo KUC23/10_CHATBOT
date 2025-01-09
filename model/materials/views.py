@@ -1,7 +1,10 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from materials.models import News
+from accounts.models import Category
 import redis
+import json
 
 redis_client = redis.StrictRedis(
     host='127.0.0.1',
@@ -11,41 +14,49 @@ redis_client = redis.StrictRedis(
 )
 
 class NewsView(APIView):
-    #redis에서 관심사에 맞는 뉴스 조회기능
+    # 유저 관심사에 맞는 뉴스 조회(redis)
     def get(self, request, *args, **kwargs):
-        user = request.user  
-        if not user.is_authenticated:
-            return Response({'error': 'Authentication required'}, status=401)
-        
-        categories = user.categories.all()
-        if not categories.exists():
-            return Response({'error': 'No categories set for this user'}, status=400)
-        
-        category_news = {}
-        for category in categories:
-            keys = redis_client.keys(f'news:{category.name}:*')[:5]  #레디스에 저장된 키 형태: ex)news:technology:1
-            news_list = [redis_client.get(key) for key in keys]
-            category_news[category.name] = news_list #category_news={"technology":[기사1, 기사2..], "health":[기사1, 기사2..]..}
+        try:
+            user = request.user
+            if not user.is_authenticated:
+                return Response({'error': 'Authentication required'}, status=401)
 
-        return Response({'user_categories': category_news})
-        
-    #redis에 뉴스 저장기능
-    def post(self, request, *args, **kwargs):
-        category = request.data.get('category', 'Main') 
-        news_id = request.data.get('id', '1')
-        content = request.data.get('content', '')
+            categories = user.categories.all()
+            if not categories.exists():
+                return Response({'error': 'No categories set for this user'}, status=400)
 
-        redis_client.set(f'news:{category}:{news_id}', content)
-        return Response({'message': 'News saved!', 'category': category, 'id': news_id})
+            category_news = {}
+            for category in categories:
+                keys = list(redis_client.scan_iter(f'news:{category.name.lower()}:*', count=5))
+                news_list = []
 
+                for key in keys:
+                    news_data = redis_client.get(key)
+                    if news_data:
+                        news_list.append(json.loads(news_data))
 
+                if not news_list:  # Redis에 데이터가 없으면 PostgreSQL에서 조회
+                    news_objects = News.objects.filter(category=category).order_by('-published_date')[:5]
+                    news_list = [
+                        {
+                            'title': news.title,
+                            'abstract': news.abstract,
+                            'url': news.url,
+                            'published_date': news.published_date.strftime('%Y-%m-%d %H:%M:%S'),
+                            'category': news.category.name
+                        }
+                        for news in news_objects
+                    ]
 
+                    # PostgreSQL 데이터를 Redis에 저장
+                    for news in news_list:
+                        redis_key = f"news:{category.name.lower()}:{news['url']}"
+                        redis_client.set(redis_key, json.dumps(news), ex=86400)
 
-#정보전송로직에서 소셜계정선택
-# default_provider = user.default_social_provider
-# if not default_provider:
-#     # 기본 제공 계정이 설정되지 않았다면 첫 번째 연결된 계정을 사용하도록
-#     default_provider = user.connected_social_providers[0]
+                category_news[category.name] = news_list
 
-
-
+            return Response({'user_categories': category_news})
+        except redis.RedisError as e:
+            return Response({'error': f'Redis error: {str(e)}'}, status=500)
+        except Exception as e:
+            return Response({'error': f'Unexpected error: {str(e)}'}, status=500)

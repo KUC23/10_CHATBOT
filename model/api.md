@@ -554,3 +554,47 @@ endpoints: api/v1/accounts/category/
 ]
 ```
 
+14. db에 뉴스데이터 저장(POST)
+- request body
+```json
+{
+  "category": "sport",
+  "id": "1235",
+  "title": "News_title",
+  "abstract": "New_abstract",
+  "url": "http://example.com/news",
+  "published_date": "2025-01-01"
+}
+```
+- response(성공, 200)
+```json
+{"message":"News saved!","category":"sport","id":"1235"}
+```
+
+15. db에서 뉴스데이터 조회(GET)
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+없음
+- response(성공, 200)
+```json
+{
+    "user_categories": {
+        "Business": [],
+        "Technology": [],
+        "Sport": [
+            {
+                "title": "News_title",
+                "abstract": "New_abstract",
+                "url": "http://example.com/news",
+                "published_date": "2025-01-01",
+                "category": "Sport"
+            }
+        ]
+    }
+}
+```
