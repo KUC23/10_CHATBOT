@@ -100,15 +100,15 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        # 'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
-        'HOST': "localhost", 
+        'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
+        # 'HOST': "localhost", 
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
 # Redis 설정
-# REDIS_HOST = "redis"  ##docker로 실행 시
-REDIS_HOST = '127.0.0.1'
+REDIS_HOST = "redis"  ##docker로 실행 시
+# REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB = 1
 

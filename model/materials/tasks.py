@@ -13,7 +13,8 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 # Redis 설정
 redis_client = redis.StrictRedis(
-    host='127.0.0.1',
+    host="redis", #도커로 실행 시
+    # host='127.0.0.1',
     port=6379,
     db=1,
     decode_responses=True
@@ -162,16 +163,25 @@ def save_redis_to_csv(file_name="news_data.csv"):
 def save_news_to_csv_task(file_name="news_data.csv"):
     save_redis_to_csv(file_name=file_name)
 
-def setup_periodic_tasks():
-    # Interval Schedule 생성
-    schedule, created = IntervalSchedule.objects.get_or_create(
-        every=1,
-        period=IntervalSchedule.DAYS,
-    )
+from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
-    # PeriodicTask 생성
-    PeriodicTask.objects.get_or_create(
-        interval=schedule,
+def setup_periodic_tasks():
+    try:
+        schedule = IntervalSchedule.objects.get(every=1, period=IntervalSchedule.DAYS)
+    except IntervalSchedule.MultipleObjectsReturned:
+        schedules = IntervalSchedule.objects.filter(every=1, period=IntervalSchedule.DAYS)
+        schedule = schedules.first()
+        schedules.exclude(id=schedule.id).delete()
+    except IntervalSchedule.DoesNotExist:
+        schedule = IntervalSchedule.objects.create(every=1, period=IntervalSchedule.DAYS)
+
+    PeriodicTask.objects.update_or_create(
         name='Fetch and Store News Daily',
-        task='tasks.fetch_and_store_news',
+        defaults={
+            'interval': schedule,
+            'task': 'materials.tasks.fetch_and_store_news',
+            'args': '[]',
+            'kwargs': '{}',
+            'enabled': True,
+        },
     )

@@ -51,6 +51,21 @@ services:
       DJANGO_SETTINGS_MODULE: "final_project.settings"
     command: celery -A final_project worker --loglevel=info
 
+  beat: 
+    build:
+      context: .
+    depends_on:
+      - redis
+      - db
+      - worker
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: "final_project.settings"
+    command: celery -A final_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
+
 volumes:
   pg_data:
   redis_data:  
