@@ -37,6 +37,7 @@ class User(AbstractUser):
             ),
         ]
     )
+
     is_active = models.BooleanField(default=True)
     is_social_connected = models.BooleanField(default=False)  
     connected_social_providers = models.JSONField(default=list, blank=True)

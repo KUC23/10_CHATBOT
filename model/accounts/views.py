@@ -43,7 +43,33 @@ class SignupView(APIView):
             user = serializer.save()  
             default_category, _ = Category.objects.get_or_create(name="Main")
             user.categories.add(default_category)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "회원가입이 완료되었습니다.", "redirect_url": "/dashboard/"}, 
+                status=status.HTTP_201_CREATED
+            )
+
+class DashboardCompleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        messenger_platform = request.data.get("messenger_platform")
+        category_ids = request.data.get("categories", [])
+
+        if messenger_platform:
+            user.default_social_provider = messenger_platform
+        
+        if category_ids:
+            valid_categories = Category.objects.filter(id__in=category_ids)
+            if not valid_categories.exists():
+                return Response({"error": "유효하지 않은 카테고리 ID입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            user.categories.set(valid_categories)
+
+        user.save()
+        return Response(
+            {"message": "회원가입 완료", "redirect_url": f"/profile/{user.username}/"},
+            status=status.HTTP_200_OK
+        )
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,7 +102,10 @@ class UpdateUserView(UpdateAPIView):
         serializer = UpdateUserSerializer(user, data=request.data, partial=True) 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "수정 완료", "redirect_url": f"/profile/{user.username}/"}, 
+                status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordChangeView(APIView):

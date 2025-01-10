@@ -5,13 +5,20 @@ from django.contrib.auth.models import Group, Permission
 from rest_framework.serializers import Serializer, CharField
 from django.contrib.auth import authenticate
 
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
 class RegisterUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
     groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
     user_permissions = serializers.PrimaryKeyRelatedField(many=True, queryset=Permission.objects.all(), required=False)
-    categories = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Category.objects.all(), required=False  
+    categories = CategorySerializer(many=True, read_only=True)  # 조회용
+    category_ids = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Category.objects.all(), write_only=True, required=False  # 생성/수정용
     )
 
     class Meta:
@@ -37,7 +44,8 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         groups = validated_data.pop('groups', [])
         user_permissions = validated_data.pop('user_permissions', [])
-        categories = validated_data.pop('categories', [])  
+        validated_data['default_social_provider'] = validated_data.pop('messenger_platform', None)
+        categories = validated_data.pop('category_ids', []) 
         validated_data.pop('password2')
         password = validated_data.pop('password')
         
@@ -46,10 +54,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.is_active = True
         user.save()
 
-        if not categories:
-            default_category, _ = Category.objects.get_or_create(name="Main")
-            user.categories.add(default_category)
-        else:
+        if categories:
             user.categories.set(categories)
 
         return user
@@ -110,7 +115,3 @@ class PasswordChangeSerializer(serializers.Serializer):
         return user
     
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name']

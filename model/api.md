@@ -36,32 +36,13 @@ endpoint: api/v1/accounts/signup/
   "phone_number": "01012345678",
   "password": "password123", #8글자 이상
   "password2": "password123", #비밀번호 확인
-  "categories": [category pk] #관심사 #required=false, defalult=1
 }
 ```
 - response(성공, 201 created)
 ```json
 {
-    "id": 12,
-    "groups": [],
-    "user_permissions": [],
-    "categories": [
-        1
-    ],
-    "last_login": null,
-    "is_superuser": false,
-    "username": "username",
-    "is_staff": false,
-    "date_joined": "2025-01-05T03:41:25.924654Z",
-    "first_name": null,
-    "last_name": null,
-    "nickname": null,
-    "birthday": null,
-    "gender": null,
-    "introduction": null,
-    "email": null,
-    "phone_number": "01011111111",
-    "is_active": true
+    "message": "회원가입이 완료되었습니다.",
+    "redirect_url": "/dashboard/"
 }
 ```
 
@@ -115,20 +96,7 @@ endpoint: api/v1/accounts/logout/
     "message": "성공적으로 로그아웃되었습니다."
 }
 ```
-- response(실패, 401 Unauthorized)
-```json
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
-```
+
 
 4. 회원탈퇴 요청 (DELETE)
 endpoint: api/v1/accounts/delete/
@@ -150,19 +118,7 @@ endpoint: api/v1/accounts/delete/
     "message": "회원탈퇴가 완료되었습니다."
 }
 ```
-- response(실패, 401 Unauthorized) 토큰불일치
-```json
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
+
 ```
 
 - response(실패, 400 bad request) 비밀번호 불일치
@@ -187,20 +143,21 @@ endpoint: api/v1/accounts/<str:username>/
     "categories": [],
     "last_login": null,
     "is_superuser": false,
-    "username": "suho",
+    "username": "user",
     "is_staff": false,
     "date_joined": "2025-01-03T04:28:37.667999Z",
-    "first_name": "su",
-    "last_name": "ho",
+    "first_name": "u",
+    "last_name": "ser",
     "nickname": "사람",
     "birthday": "2000-01-01",
     "gender": null,
     "introduction": null,
-    "email": "su@human.com",
+    "email": "user@human.com",
     "phone_number": "01012345673",
     "is_active": true,
     "is_social_connected": false,
-    "connected_social_providers": []
+    "connected_social_providers": [],
+    "defalut_social_providers": "kakao" # or discord
 }
 ```
 - response(실패, 404 Not found) 해당하는 유저 없음
@@ -210,20 +167,7 @@ endpoint: api/v1/accounts/<str:username>/
 }
 ```
 
-- response(실패, 401 Unauthorized)
-```json
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
-```
+
 5-2. 회원정보수정 (PUT/PATCH)
 endpoint: api/v1/accounts/update/
 - headers
@@ -247,29 +191,11 @@ endpoint: api/v1/accounts/update/
 - response(성공, 200 ok)
 ```json
 {
-    "email": "em@.com",
-    "first_name": "new_name",
-    "last_name": "eman",
-    "nickname": "new_nickname",
-    "birthday": "2000-01-01",
-    "phone_number": "01012345678",
-    "categories" : [category pk]
+    "message": "수정 완료",
+    "redirect_url": "/profile/{str:username}/"
 }
 ```
-- response(실패, 401 Unauthorized) 토큰불일치
-```json
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
-```
+
 - response(실패, 400 bad request) 정보입력 오류
 ```json
 {
@@ -319,20 +245,7 @@ endpoint: api/v1/accounts/password/change/
 }
 ```
 
-- response(실패, 401 Unauthorized) 토큰불일치
-```json
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
-```
+
 
 7. 소셜로그인 중복확인: 소셜계정으로 로그인 시도 시 소셜계정의 이메일/전화번호가 기존에 가입된 유저의 이메일/전화번호와 같은지 확인 (POST)
 endpoint: api/v1/socials/check-user/
@@ -579,5 +492,33 @@ endpoints: api/v1/accounts/category/
             }
         ]
     }
+}
+```
+
+15. dashboard(POST)
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+```json
+{
+    "messenger_platform": "kakao", # or discord
+    "category": [category pk]
+}
+```
+- response(성공, 200)
+```json
+{
+    "message": "회원가입 완료",
+    "redirect_url": "/profile/{str:username}/"
+}
+```
+- response(실패, 400 Bad reqeust)
+```json
+{
+    "error": "데이터가 부족합니다."
 }
 ```
