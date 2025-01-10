@@ -135,20 +135,23 @@
     </div>
     <div class="content">
         <h1>원하시는 카테고리를 선택하세요!</h1>
+        <form method="POST" action="/api/v1/accounts/signup/">
+        {% csrf_token %}
+        <!-- 보여주기용으로 일단은 텍스트가 보이도록 처리 type="text" -> type="hidden" 으로 처리하면 숨겨짐 -->
+        <input type="text" name="category" id="category" value=""> <!-- 숨겨진 입력필드 생성 -->
         <div class="categories">
-            <div class="category"><strong>main</strong></div>
-            <div class="category highlight"><strong>technology</strong></div>
-            <div class="category"><strong>business</strong></div>
-            <div class="category highlight"><strong>science</strong></div>
-            <div class="category"><strong>health</strong></div>
-            <div class="category highlight"><strong>politics</strong></div>
-	    <div class="category highlight"><strong>art</strong></div>
-	    <div class="category highlight"><strong>sport</strong></div>
+            <div class="category" onclick="document.getElementById('category').value = 'main'; this.closest('form').submit();"><strong>main</strong></div>
+            <div class="category highlight" onclick="document.getElementById('category').value = 'technology'; this.closest('form').submit();"><strong>technology</strong></div>
+            <div class="category" onclick="document.getElementById('category').value = 'business'; this.closest('form').submit();"><strong>business</strong></div>
+            <div class="category highlight" onclick="document.getElementById('category').value = 'science'; this.closest('form').submit();"><strong>science</strong></div>
+            <div class="category" onclick="document.getElementById('category').value = 'health'; this.closest('form').submit();"><strong>health</strong></div>
+            <div class="category highlight" onclick="document.getElementById('category').value = 'politics'; this.closest('form').submit();"><strong>politics</strong></div>
+            <div class="category highlight" onclick="document.getElementById('category').value = 'art'; this.closest('form').submit();"><strong>art</strong></div>
+            <div class="category highlight" onclick="document.getElementById('category').value = 'sport'; this.closest('form').submit();"><strong>sport</strong></div>
         </div>
 	<br><br>
+	<br><br>
         <h2>원하시는 메신저 플랫폼을 선택하세요!</h2>
-        <form method="POST" action="/api/v1/messenger/link/">
-            {% csrf_token %}
             <label for="messenger">메신저 플랫폼을 선택해주세요!</label>
             <select id="messenger" name="messenger">
                 <option value="kakao">카카오톡</option>

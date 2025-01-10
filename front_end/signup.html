@@ -148,8 +148,19 @@
                 <input type="text" name="phone_number" placeholder="전화번호" required>
                 <input type="password" name="password" placeholder="비밀번호" required>
                 <input type="password" name="password2" placeholder="비밀번호 확인" required>
-                <button type="submit">회원가입</button>
+                <button type="submit">다음단계로</button>
             </form>
+            <!-- password와 password2의 일치여부 확인 -->
+            <script>
+                document.querySelector("form").addEventListener("submit", function (e) {
+                    const password = document.querySelector('input[name="password"]').value;
+                    const password2 = document.querySelector('input[name="password2"]').value;
+                    if (password !== password2) {
+                        e.preventDefault();
+                        alert("비밀번호가 일치하지 않습니다.");
+                    }
+                });
+            </script>
             <a href="{% url 'login' %}">이미 아이디를 가지고 계신가요?</a>
         </div>
     </div>
