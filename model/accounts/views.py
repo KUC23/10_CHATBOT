@@ -38,9 +38,11 @@ class SignupView(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
     def post(self, request):
-        serializer=RegisterUserSerializer(data=request.data)
+        serializer = RegisterUserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            user = serializer.save()  
+            default_category, _ = Category.objects.get_or_create(name="Main")
+            user.categories.add(default_category)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class LogoutView(APIView):

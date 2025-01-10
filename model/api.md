@@ -30,13 +30,13 @@ username란에 핸드폰번호 입력으로도 로그인 가능
 endpoint: api/v1/accounts/signup/
 - request body
 ```json
-#필수요구정보
+#필수요구: username, phone_number, password, password2
 {
   "username": "newuser",
   "phone_number": "01012345678",
-  "password": "password123",
+  "password": "password123", #8글자 이상
   "password2": "password123", #비밀번호 확인
-  "categories": [category pk] #관심사
+  "categories": [category pk] #관심사 #required=false, defalult=1
 }
 ```
 - response(성공, 201 created)

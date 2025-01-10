@@ -31,8 +31,11 @@ def get_postgres_connection():
 
 # nyt api에서 받아와 redis에 저장
 @shared_task
-def fetch_and_store_news():
+def fetch_and_store_news(news_source="NYTimes"):
     API_KEY = config("NYT_API_KEY")
+    MAX_RETRIES = 3  # 최대 재시도 횟수
+    REQUEST_DELAY = 5  # 기본 요청 간 대기 시간 (초)
+    TOO_MANY_REQUEST_DELAY = 60  # Too Many Requests 시 대기 시간 (초)
 
     categories = Category.objects.all()
     if not categories.exists():
@@ -40,44 +43,55 @@ def fetch_and_store_news():
         return
 
     for category in categories:
-        section = category.name.lower()
-        url = f"https://api.nytimes.com/svc/topstories/v2/{section}.json"
+        source_category = category.get_source_category(category.name, news_source)
+        if not source_category:
+            print(f"No mapping found for category '{category.name}' in source '{news_source}'.")
+            continue
+
+        url = f"https://api.nytimes.com/svc/topstories/v2/{source_category}.json"
         params = {'api-key': API_KEY}
+        
+        retries = 0
+        while retries < MAX_RETRIES:
+            response = requests.get(url, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                articles = data.get('results', [])
+                print(f"Fetching articles for category: {category.name} ({source_category})")
 
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get('results', [])
-            print(f"Fetching articles for category: {category.name}")
-
-            for article in articles[:5]:
-                # Redis에 저장
-                news_url = article.get('url', 'No URL')
-                redis_key = f"news:{category.name.lower()}:{news_url}"
-                redis_value = json.dumps({
-                    'title': article.get('title', 'No Title'),
-                    'abstract': article.get('abstract', 'No Abstract'),
-                    'url': news_url,
-                    'published_date': article.get('published_date', 'No Date'),
-                    'category': category.name
-                })
-                redis_client.set(redis_key, redis_value, ex=86400)
-
-                # PostgreSQL에 저장
-                News.objects.update_or_create(
-                    url=news_url,  
-                    defaults={
+                for article in articles[:5]:
+                    news_url = article.get('url', 'No URL')
+                    redis_key = f"news:{category.name.lower()}:{news_url}"
+                    redis_value = json.dumps({
                         'title': article.get('title', 'No Title'),
                         'abstract': article.get('abstract', 'No Abstract'),
+                        'url': news_url,
                         'published_date': article.get('published_date', 'No Date'),
-                        'category': category
-                    }
-                )
-        elif response.status_code == 429:
-            print(f"Too many requests for category: {category.name}. Please wait.")
-            time.sleep(10)
-        else:
-            print(f"Failed to fetch articles for category: {category.name}. Status Code: {response.status_code}")
+                        'category': category.name
+                    })
+                    redis_client.set(redis_key, redis_value, ex=86400)
+
+                    News.objects.update_or_create(
+                        url=news_url,
+                        defaults={
+                            'title': article.get('title', 'No Title'),
+                            'abstract': article.get('abstract', 'No Abstract'),
+                            'published_date': article.get('published_date', 'No Date'),
+                            'category': category
+                        }
+                    )
+                break  # 성공하면 반복 종료
+            elif response.status_code == 429:
+                print(f"Too many requests for category: {category.name}. Retrying in {TOO_MANY_REQUEST_DELAY} seconds...")
+                time.sleep(TOO_MANY_REQUEST_DELAY)  
+            else:
+                print(f"Failed to fetch articles for category: {category.name}. Status Code: {response.status_code}")
+                retries += 1
+                time.sleep(REQUEST_DELAY) 
+
+        if retries == MAX_RETRIES:
+            print(f"Max retries reached for category: {category.name}. Skipping...")
+        time.sleep(REQUEST_DELAY)  
 
 # redis의 데이터 postgresql로 이동
 @shared_task

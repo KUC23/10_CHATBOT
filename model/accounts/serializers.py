@@ -11,7 +11,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
     user_permissions = serializers.PrimaryKeyRelatedField(many=True, queryset=Permission.objects.all(), required=False)
     categories = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Category.objects.all(), required=True 
+        many=True, queryset=Category.objects.all(), required=False  
     )
 
     class Meta:
@@ -46,7 +46,10 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.is_active = True
         user.save()
 
-        if categories:
+        if not categories:
+            default_category, _ = Category.objects.get_or_create(name="Main")
+            user.categories.add(default_category)
+        else:
             user.categories.set(categories)
 
         return user

@@ -14,7 +14,7 @@ redis_client = redis.StrictRedis(
 )
 
 class NewsView(APIView):
-    # 유저 관심사에 맞는 뉴스 조회(redis)
+    # 유저 관심사에 맞는 뉴스 조회(redis 먼저 확인 후 postgresql)
     def get(self, request, *args, **kwargs):
         try:
             user = request.user
@@ -35,7 +35,8 @@ class NewsView(APIView):
                     if news_data:
                         news_list.append(json.loads(news_data))
 
-                if not news_list:  # Redis에 데이터가 없으면 PostgreSQL에서 조회
+                # Redis에 데이터가 없으면 PostgreSQL에서 조회
+                if not news_list:
                     news_objects = News.objects.filter(category=category).order_by('-published_date')[:5]
                     news_list = [
                         {

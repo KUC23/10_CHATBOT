@@ -1,12 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.contrib.postgres.fields import JSONField 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    source_categories = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_source_category(cls, standard_category_name, news_source):
+        try:
+            category = cls.objects.get(name=standard_category_name)
+            return category.source_categories.get(news_source, None)  
+        except cls.DoesNotExist:
+            print(f"Category '{standard_category_name}' does not exist.")
+            return None
 
 class User(AbstractUser):
     first_name = models.CharField(max_length=150, blank=True, null=True)
