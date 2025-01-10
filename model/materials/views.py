@@ -52,7 +52,8 @@ class NewsView(APIView):
                     # PostgreSQL 데이터를 Redis에 저장
                     for news in news_list:
                         redis_key = f"news:{category.name.lower()}:{news['url']}"
-                        redis_client.set(redis_key, json.dumps(news), ex=86400)
+                        if not redis_client.exists(redis_key):  
+                            redis_client.set(redis_key, json.dumps(news), ex=86400)
 
                 category_news[category.name] = news_list
 
