@@ -468,6 +468,7 @@ endpoints: api/v1/accounts/category/
 ```
 
 14. db에서 관심사에 맞는 뉴스데이터 조회(GET)
+endpoints: api/v1/materials/news/
 - headers
 ```json
 {
@@ -496,6 +497,7 @@ endpoints: api/v1/accounts/category/
 ```
 
 15. dashboard(POST)
+endpoints: api/v1/accounts/dashboard/
 - headers
 ```json
 {
@@ -506,7 +508,7 @@ endpoints: api/v1/accounts/category/
 ```json
 {
     "messenger_platform": "kakao", # or discord
-    "category": [category pk]
+    "categories": [category pk]
 }
 ```
 - response(성공, 200)
@@ -519,6 +521,6 @@ endpoints: api/v1/accounts/category/
 - response(실패, 400 Bad reqeust)
 ```json
 {
-    "error": "데이터가 부족합니다."
+    "error": "유효하지 않은 카테고리 ID입니다."
 }
 ```

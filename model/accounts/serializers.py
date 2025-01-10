@@ -16,9 +16,8 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True)
     groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all(), required=False)
     user_permissions = serializers.PrimaryKeyRelatedField(many=True, queryset=Permission.objects.all(), required=False)
-    categories = CategorySerializer(many=True, read_only=True)  # 조회용
-    category_ids = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Category.objects.all(), write_only=True, required=False  # 생성/수정용
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Category.objects.all(), required=False  
     )
 
     class Meta:
@@ -45,7 +44,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         groups = validated_data.pop('groups', [])
         user_permissions = validated_data.pop('user_permissions', [])
         validated_data['default_social_provider'] = validated_data.pop('messenger_platform', None)
-        categories = validated_data.pop('category_ids', []) 
+        categories = validated_data.pop('categories', [])
         validated_data.pop('password2')
         password = validated_data.pop('password')
         

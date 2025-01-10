@@ -13,8 +13,8 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 # Redis 설정
 redis_client = redis.StrictRedis(
-    host="redis", #도커로 실행 시
-    # host='127.0.0.1',
+    # host="redis", #도커로 실행 시
+    host='127.0.0.1',
     port=6379,
     db=1,
     decode_responses=True
