@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect, render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import UpdateAPIView
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import login
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -31,46 +32,80 @@ class LoginView(APIView):
 
 class SignupView(APIView):
     def get(self, request, username):
-        if request.user.is_authenticated:
-            user=get_object_or_404(User, username=username)
-            serializer=RegisterUserSerializer(user)
+        if request.user.is_authenticated and request.user.username == username:
+            serializer = RegisterUserSerializer(request.user)
             return Response(serializer.data)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
+        return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
     def post(self, request):
         serializer = RegisterUserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            user = serializer.save()  
+            user = serializer.save()
             default_category, _ = Category.objects.get_or_create(name="Main")
             user.categories.add(default_category)
-            return Response(
-                {"message": "회원가입이 완료되었습니다.", "redirect_url": "/dashboard/"}, 
-                status=status.HTTP_201_CREATED
+
+            authenticated_user = authenticate(
+                request,
+                username=user.username,
+                password=request.data.get('password')
             )
 
+            if authenticated_user:
+                authenticated_user.backend = 'accounts.backends.UsernameOrPhoneBackend'
+                login(request, authenticated_user)
+
+                refresh = RefreshToken.for_user(authenticated_user)
+                access_token = str(refresh.access_token)
+
+                response = render(request, 'preferences.html', {
+                    'user': authenticated_user,
+                    'categories': authenticated_user.categories.all(),
+                    'access': access_token,
+                })
+
+                response.set_cookie(
+                    key="access",
+                    value=access_token,
+                    httponly=True,
+                    samesite="Lax"
+                )
+                response.set_cookie(
+                    key="refresh",
+                    value=str(refresh),
+                    httponly=True,
+                    samesite="Lax"
+                )
+                return response
+
+            return Response({"error": "인증 실패"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
 class DashboardCompleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
+        if not user.is_authenticated:
+            return Response({"error": "인증이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
         messenger_platform = request.data.get("messenger_platform")
         category_ids = request.data.get("categories", [])
 
         if messenger_platform:
             user.default_social_provider = messenger_platform
-        
+
         if category_ids:
             valid_categories = Category.objects.filter(id__in=category_ids)
-            if not valid_categories.exists():
+            if len(valid_categories) != len(category_ids):
                 return Response({"error": "유효하지 않은 카테고리 ID입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
             user.categories.set(valid_categories)
 
         user.save()
-        return Response(
-            {"message": "회원가입 완료", "redirect_url": f"/profile/{user.username}/"},
-            status=status.HTTP_200_OK
-        )
-
+        return render(request, 'profile.html', {'user': user, 'categories': user.categories.all()})
+    
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -94,19 +129,22 @@ class DeleteAccountView(APIView):
         user.delete()
         return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
+from django.shortcuts import redirect
+
 class UpdateUserView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
         user = request.user
-        serializer = UpdateUserSerializer(user, data=request.data, partial=True) 
+        serializer = UpdateUserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "수정 완료", "redirect_url": f"/profile/{user.username}/"}, 
-                status=status.HTTP_200_OK
-            )
+            return render(request, 'profile.html', {
+                'user': user,
+                'categories': user.categories.all(),
+            })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -125,21 +163,3 @@ class CategoryListView(APIView):
     def get(self, request):
         categories = Category.objects.all().values("id", "name")
         return Response(list(categories))
-
-    # def post(self, request):
-    #     if not request.user.is_authenticated:
-    #         return Response({"message": "로그인이 필요합니다."}, status=401)
-        
-    #     category_ids = request.data.get("categories", [])
-    #     if not isinstance(category_ids, list) or not category_ids:
-    #         return Response({"message": "관심사를 선택해주세요."}, status=400)
-
-    #     try:
-    #         categories = Category.objects.filter(id__in=category_ids)
-    #         if not categories.exists():
-    #             return Response({"message": "유효하지 않은 카테고리입니다."}, status=400)
-
-    #         request.user.categories.set(categories)  
-    #         return Response({"message": "관심사가 성공적으로 저장되었습니다."}, status=200)
-    #     except Exception as e:
-    #         return Response({"message": f"에러 발생: {str(e)}"}, status=500)

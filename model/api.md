@@ -1,3 +1,4 @@
+**포스트맨에서 리다이렉트 요청 성공여부 확인불가**
 1. 로그인 요청 (POST)
 endpoint: api/v1/accounts/login/
 - request body
@@ -38,13 +39,7 @@ endpoint: api/v1/accounts/signup/
   "password2": "password123", #비밀번호 확인
 }
 ```
-- response(성공, 201 created)
-```json
-{
-    "message": "회원가입이 완료되었습니다.",
-    "redirect_url": "/dashboard/"
-}
-```
+- response(302 Found): 리다이렉트
 
 - response(실패, 400 bad reqeust) : 이미 존재하는 유저정보
 ```json
@@ -131,6 +126,12 @@ endpoint: api/v1/accounts/delete/
 ```
 5-1. 회원정보조회 (GET)
 endpoint: api/v1/accounts/<str:username>/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
 - request body
 없음
 
@@ -160,13 +161,12 @@ endpoint: api/v1/accounts/<str:username>/
     "defalut_social_providers": "kakao" # or discord
 }
 ```
-- response(실패, 404 Not found) 해당하는 유저 없음
+- response(실패, 403 Forbidden) 타인의 정보 조회불가
 ```json
 {
-    "detail": "No User matches the given query."
+    "error": "권한이 없습니다."
 }
 ```
-
 
 5-2. 회원정보수정 (PUT/PATCH)
 endpoint: api/v1/accounts/update/
@@ -179,22 +179,23 @@ endpoint: api/v1/accounts/update/
 - request body
 ```json
 {
-    "email": "em@.com",
-    "first_name": "name",
-    "last_name": "eman",
-    "nickname": "nick",
-    "birthday": "2000-01-01",
-    "phone_number": "01012345678",
-    "categories" : [category pk]
+    "id": 1,
+    "categories": [
+        4
+    ],
+    "username": "user",
+    "first_name": null,
+    "last_name": null,
+    "nickname": null,
+    "birthday": null,
+    "email": null,
+    "phone_number": "01011111111",
+    "is_social_connected": false,
+    "connected_social_providers": [],
+    "default_social_provider": "kakao"
 }
 ```
-- response(성공, 200 ok)
-```json
-{
-    "message": "수정 완료",
-    "redirect_url": "/profile/{str:username}/"
-}
-```
+- response(302 Found): 리다이렉트
 
 - response(실패, 400 bad request) 정보입력 오류
 ```json
@@ -244,7 +245,6 @@ endpoint: api/v1/accounts/password/change/
     ]
 }
 ```
-
 
 
 7. 소셜로그인 중복확인: 소셜계정으로 로그인 시도 시 소셜계정의 이메일/전화번호가 기존에 가입된 유저의 이메일/전화번호와 같은지 확인 (POST)
@@ -477,7 +477,7 @@ endpoints: api/v1/materials/news/
 ```
 - request body
 없음
-- response(성공, 200)
+- response(성공, 200 Ok)
 ```json
 {
     "user_categories": {
@@ -496,7 +496,7 @@ endpoints: api/v1/materials/news/
 }
 ```
 
-15. dashboard(POST)
+15. preferences(POST)
 endpoints: api/v1/accounts/dashboard/
 - headers
 ```json
@@ -511,13 +511,7 @@ endpoints: api/v1/accounts/dashboard/
     "categories": [category pk]
 }
 ```
-- response(성공, 200)
-```json
-{
-    "message": "회원가입 완료",
-    "redirect_url": "/profile/{str:username}/"
-}
-```
+- response(302 Found): 리다이렉트
 - response(실패, 400 Bad reqeust)
 ```json
 {

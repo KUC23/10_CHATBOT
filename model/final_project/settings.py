@@ -90,6 +90,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'final_project.wsgi.application'
 
+SESSION_COOKIE_SAMESITE = "Lax"  
+CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_COOKIE_SECURE = False   # HTTPS 환경에서는 True
+CSRF_COOKIE_SECURE = False      # HTTPS 환경에서는 True
+
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -146,11 +155,19 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_COOKIE': 'access',  
+    'AUTH_COOKIE_REFRESH': 'refresh', 
+    'AUTH_COOKIE_SECURE': False, # HTTPS 환경에서는 True
+    'AUTH_COOKIE_HTTP_ONLY': True, 
+    'AUTH_COOKIE_PATH': '/', 
+    'AUTH_COOKIE_SAMESITE': 'Lax',  
 }
 
 REST_FRAMEWORK = {

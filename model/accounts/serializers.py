@@ -75,7 +75,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'nickname', 'birthday', 'phone_number', 'categories']  
+        fields = ['email', 'first_name', 'last_name', 'nickname', 'birthday', 'phone_number', 'categories', 'default_social_provider']  
     
 def update(self, instance, validated_data):
     if 'categories' in validated_data:

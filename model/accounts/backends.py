@@ -5,7 +5,7 @@ User = get_user_model()
 
 class UsernameOrPhoneBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        if username is None:
+        if username is None or password is None:
             return None
 
         try:
@@ -19,3 +19,4 @@ class UsernameOrPhoneBackend(ModelBackend):
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
         return None
+
