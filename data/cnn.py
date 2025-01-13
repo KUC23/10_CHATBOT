@@ -101,6 +101,6 @@ if cnn_news:
     # CSV 파일로 저장
     csv_file_name = 'cnn_news.csv'
     df.to_csv(csv_file_name, index=False, encoding='utf-8-sig')
-    print(f"\nSaved {len(all_news)} articles to {csv_file_name}")
+    print(f"\nSaved {len(cnn_news)} articles to {csv_file_name}")
 else:
     print("No news data to save.")
