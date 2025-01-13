@@ -19,6 +19,8 @@ class Category(models.Model):
             print(f"Category '{standard_category_name}' does not exist.")
             return None
 
+
+
 class User(AbstractUser):
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)

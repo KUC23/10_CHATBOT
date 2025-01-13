@@ -129,7 +129,6 @@ class DeleteAccountView(APIView):
         user.delete()
         return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
-from django.shortcuts import redirect
 
 class UpdateUserView(UpdateAPIView):
     permission_classes = [IsAuthenticated]

@@ -10,6 +10,15 @@ from decouple import config
 from accounts.models import Category
 from materials.models import News
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from django.db import transaction
+from psycopg2 import sql
 
 # Redis 설정
 redis_client = redis.StrictRedis(
@@ -94,6 +103,123 @@ def fetch_and_store_news(news_source="NYTimes"):
             print(f"Max retries reached for category: {category.name}. Skipping...")
         time.sleep(REQUEST_DELAY)  
 
+#cnn크롤링
+def scrape_cnn_news_with_selenium(category_url, max_retries=3, retry_delay=5):
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    options.add_argument("--disable-gpu")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    try:
+        retries = 0
+        while retries < max_retries:
+            try:
+                driver.get(category_url)
+
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located((By.CLASS_NAME, "container__headline-text"))
+                )
+
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                articles = []
+
+                for article in soup.find_all('span', class_='container__headline-text')[:5]:
+                    title = article.get_text().strip()
+                    link_element = article.find_parent("a")
+                    if link_element and "href" in link_element.attrs:
+                        link = link_element['href']
+                        if not link.startswith("http"):
+                            link = f"https://edition.cnn.com{link}"
+
+                        # 기사 전문 추출
+                        content = extract_article_content(driver, link)
+
+                        articles.append({"title": title, "url": link, "content": content})
+
+                return articles
+
+            except Exception as e:
+                retries += 1
+                print(f"Attempt {retries}/{max_retries} failed for {category_url}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+
+        print(f"Max retries reached for {category_url}. Skipping...")
+        return []
+
+    except Exception as e:
+        print(f"Error occurred while scraping {category_url}: {e}")
+        return []
+
+    finally:
+        driver.quit()
+
+
+#cnn 기사 전문추출
+def extract_article_content(driver, article_url, max_retries=3, retry_delay=5):
+    retries = 0
+    while retries < max_retries:
+        try:
+            driver.get(article_url)
+            time.sleep(3)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+            paragraphs = soup.find_all('p', class_='paragraph inline-placeholder vossi-paragraph')
+            content = " ".join([p.get_text().strip() for p in paragraphs])
+            return content[:200] + "..." if len(content) > 200 else content
+
+        except Exception as e:
+            retries += 1
+            print(f"Attempt {retries}/{max_retries} failed for {article_url}. Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+
+    print(f"Max retries reached for {article_url}. Returning 'No content available.'")
+    return "No content available."
+
+
+@shared_task
+def fetch_and_store_cnn_news():
+    categories = Category.objects.all()
+    if not categories.exists():
+        print("No categories found in the database.")
+        return
+
+    for category in categories:
+        source_category = category.get_source_category(category.name, "CNN")
+        if not source_category:
+            print(f"No mapping found for category '{category.name}' in source 'CNN'.")
+            continue
+
+        category_url = f"https://edition.cnn.com/{source_category}"
+        print(f"Fetching articles for category: {category.name} (URL: {category_url})")
+
+        articles = scrape_cnn_news_with_selenium(category_url)
+
+        if articles:
+            for article in articles[:5]:  
+                redis_key = f"news:{category.name.lower()}:{article['url']}"
+                redis_value = json.dumps({
+                    'title': article['title'],
+                    'abstract': article['content'],  # CNN 기사 전문을 abstract로 저장
+                    'url': article['url'],
+                    'published_date': time.strftime('%Y-%m-%d %H:%M:%S'),  
+                    'category': category.name
+                })
+                redis_client.set(redis_key, redis_value, ex=86400)  
+
+                # PostgreSQL 저장
+                News.objects.update_or_create(
+                    url=article['url'],
+                    defaults={
+                        'title': article['title'],
+                        'abstract': article['content'],  # CNN 기사 전문
+                        'published_date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'category': category,
+                    }
+                )
+            print(f"Saved {len(articles)} articles for category: {category.name}")
+        else:
+            print(f"No articles found for category: {category.name}")
+
 # redis의 데이터 postgresql로 이동
 @shared_task
 def transfer_data_to_postgresql():
@@ -163,7 +289,6 @@ def save_redis_to_csv(file_name="news_data.csv"):
 def save_news_to_csv_task(file_name="news_data.csv"):
     save_redis_to_csv(file_name=file_name)
 
-from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
 def setup_periodic_tasks():
     try:
@@ -175,11 +300,24 @@ def setup_periodic_tasks():
     except IntervalSchedule.DoesNotExist:
         schedule = IntervalSchedule.objects.create(every=1, period=IntervalSchedule.DAYS)
 
+    # NYTimes 작업
     PeriodicTask.objects.update_or_create(
-        name='Fetch and Store News Daily',
+        name='Fetch and Store NYT News Daily',
         defaults={
             'interval': schedule,
             'task': 'materials.tasks.fetch_and_store_news',
+            'args': '[]',
+            'kwargs': '{}',
+            'enabled': True,
+        },
+    )
+
+    # CNN 작업
+    PeriodicTask.objects.update_or_create(
+        name='Fetch and Store CNN News Daily',
+        defaults={
+            'interval': schedule,
+            'task': 'materials.tasks.fetch_and_store_cnn_news',
             'args': '[]',
             'kwargs': '{}',
             'enabled': True,
