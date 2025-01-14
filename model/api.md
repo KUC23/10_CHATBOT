@@ -551,7 +551,7 @@ endpoints: api/v1/chatbots/news/
         "Main": {
             "article_id": 28,
             "title": "string",
-            "content": "abstract",
+            "content": "abstract", #NYT는 요약본이, CNN은 기사전문이 챗봇에게 전달됩니다.
             "category": "Main",
             "url": "https://url",
             "published_date": "2025-01-09 05:01:07"
@@ -574,4 +574,9 @@ endpoints: api/v1/chatbots/news/
         }
     }
 }
+```
+
+- response(실패, 400 Bad request) 관심사 설정 안 됨됨
+```json
+{'error': 'No categories set for this user'}
 ```
