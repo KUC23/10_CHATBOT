@@ -104,7 +104,7 @@ def fetch_and_store_news(news_source="NYTimes"):
         time.sleep(REQUEST_DELAY)  
 
 #cnn크롤링
-def scrape_cnn_news_with_selenium(category_url, max_retries=3, retry_delay=5):
+def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
     options = webdriver.ChromeOptions()
     options.headless = True
     options.add_argument("--disable-gpu")
@@ -155,7 +155,7 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=3, retry_delay=5):
 
 
 #cnn 기사 전문추출
-def extract_article_content(driver, article_url, max_retries=3, retry_delay=5):
+def extract_article_content(driver, article_url, max_retries=1, retry_delay=5):
     retries = 0
     while retries < max_retries:
         try:
