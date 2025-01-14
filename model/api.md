@@ -544,3 +544,34 @@ endpoints: api/v1/chatbots/news/
     }
 }
 ```
+- response(성공, 200 Ok) 관심사가 여러 개일 경우 모두 반환
+```json
+{
+    "articles": {
+        "Main": {
+            "article_id": 28,
+            "title": "string",
+            "content": "abstract",
+            "category": "Main",
+            "url": "https://url",
+            "published_date": "2025-01-09 05:01:07"
+        },
+        "Technology": {
+            "article_id": 32,
+            "title": "string",
+            "content": "abstract",
+            "category": "Technology",
+            "url": "https://url",
+            "published_date": "2025-01-08 19:30:07"
+        },
+        "Business": {
+            "article_id": 36,
+            "title": "string",
+            "content": "abstract",
+            "category": "Business",
+            "url": "https://url",
+            "published_date": "2025-01-09 10:01:25"
+        }
+    }
+}
+```
