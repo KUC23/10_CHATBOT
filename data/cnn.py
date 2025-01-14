@@ -11,7 +11,7 @@ import pandas as pd
 def scrape_cnn_news_with_selenium(category_url):
     # Selenium WebDriver 설정
     options = webdriver.ChromeOptions()
-    options.headless = False 
+    options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
@@ -61,7 +61,7 @@ def extract_article_content(driver, article_url):
         # 본문 내용 추출 
         paragraphs = soup.find_all('p', class_='paragraph inline-placeholder vossi-paragraph')
         content = " ".join([p.get_text().strip() for p in paragraphs])
-        return content[:200] + "..." if len(content) > 200 else content
+        return content
     except Exception as e:
         print(f"Error while extracting content from {article_url}: {e}")
         return "No content available."
