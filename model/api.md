@@ -467,7 +467,7 @@ endpoints: api/v1/accounts/category/
 ]
 ```
 
-14. db에서 관심사에 맞는 뉴스데이터 조회(GET)
+<!-- 14. db에서 관심사에 맞는 뉴스데이터 조회(GET)
 endpoints: api/v1/materials/news/
 - headers
 ```json
@@ -493,11 +493,11 @@ endpoints: api/v1/materials/news/
             }
         ]
     }
-}
+} -->
 ```
 
 15. preferences(POST)
-endpoints: api/v1/accounts/dashboard/
+endpoints: api/v1/accounts/preferences/
 - headers
 ```json
 {
@@ -516,5 +516,31 @@ endpoints: api/v1/accounts/dashboard/
 ```json
 {
     "error": "유효하지 않은 카테고리 ID입니다."
+}
+```
+
+
+16. 기사를 챗봇에 전달(POST)
+endpoints: api/v1/chatbots/news/
+
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+없음
+- response(성공, 200 Ok)
+```json
+{
+    "article": {
+        "article_id": number,
+        "title": "string",
+        "content": "string",
+        "category": "Health",
+        "url": "http://url",
+        "published_date": "2015-04-16 18:13:18"
+    }
 }
 ```
