@@ -39,7 +39,17 @@ endpoint: api/v1/accounts/signup/
   "password2": "password123", #비밀번호 확인
 }
 ```
-- response(302 Found): 리다이렉트
+- response(200 Ok): 회원가입 후 로그인상태 유지
+```json
+{
+    "message": "회원가입이 완료되었습니다.",
+    "redirect_url": "/preferences/",
+    "token": {
+        "refresh": "eyJhbGc...",
+        "access": "eyJhbGc..."
+    }
+}
+```
 
 - response(실패, 400 bad reqeust) : 이미 존재하는 유저정보
 ```json
@@ -467,37 +477,25 @@ endpoints: api/v1/accounts/category/
 ]
 ```
 
-<!-- 14. db에서 관심사에 맞는 뉴스데이터 조회(GET)
-endpoints: api/v1/materials/news/
-- headers
+14. 리프레쉬토큰 발급(POST)
+endpoint: api/v1/accounts/token/refresh/
+- request body
 ```json
 {
-    "Authorization": "Bearer <token>"
-}
+    "refresh" : "eyJhbGc..."
+    }
 ```
-- request body
-없음
+
 - response(성공, 200 Ok)
 ```json
 {
-    "user_categories": {
-        "Business": [],
-        "Technology": [],
-        "Sport": [
-            {
-                "title": "News_title",
-                "abstract": "New_abstract",
-                "url": "http://example.com/news",
-                "published_date": "2025-01-01",
-                "category": "Sport"
-            }
-        ]
-    }
-} -->
+    "access": "eyJhbGc...",
+    "refresh": "eyJhbGc..."
+}
 ```
 
-15. preferences(POST)
-endpoints: api/v1/accounts/preferences/
+15. preferences(POST) or dashboard
+endpoint: api/v1/accounts/preferences/
 - headers
 ```json
 {
@@ -511,7 +509,13 @@ endpoints: api/v1/accounts/preferences/
     "categories": [category pk]
 }
 ```
-- response(302 Found): 리다이렉트
+- response(성공, 200 Ok)
+```json
+{
+    "message": "회원가입 완료",
+    "redirect_url": "/profile/{str:username}/"
+}
+```
 - response(실패, 400 Bad reqeust)
 ```json
 {
