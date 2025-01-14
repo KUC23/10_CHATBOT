@@ -1,0 +1,7 @@
+readme
+
+gemini.ipynb - gemini 모델 테스트용
+gpt.ipynb - gpt 모델 테스트용, 사용하지 않음
+
+gemini.ipynb
+
