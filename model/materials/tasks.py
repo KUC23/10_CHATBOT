@@ -165,7 +165,7 @@ def extract_article_content(driver, article_url, max_retries=3, retry_delay=5):
 
             paragraphs = soup.find_all('p', class_='paragraph inline-placeholder vossi-paragraph')
             content = " ".join([p.get_text().strip() for p in paragraphs])
-            return content[:200] + "..." if len(content) > 200 else content
+            return content  
 
         except Exception as e:
             retries += 1
