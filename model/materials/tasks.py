@@ -39,7 +39,7 @@ def get_postgres_connection():
         port="5432"
     )
 
-# nyt api에서 받아와 redis에 저장
+# nyt api에서 받아와 db에 저장
 @shared_task
 def fetch_and_store_news(news_source="NYTimes"):
     API_KEY = config("NYT_API_KEY")
@@ -79,8 +79,11 @@ def fetch_and_store_news(news_source="NYTimes"):
                         'published_date': article.get('published_date', 'No Date'),
                         'category': category.name
                     })
+
+                    
                     redis_client.set(redis_key, redis_value, ex=86400)
 
+                
                     News.objects.update_or_create(
                         url=news_url,
                         defaults={
@@ -90,18 +93,20 @@ def fetch_and_store_news(news_source="NYTimes"):
                             'category': category
                         }
                     )
+
                 break  # 성공하면 반복 종료
             elif response.status_code == 429:
                 print(f"Too many requests for category: {category.name}. Retrying in {TOO_MANY_REQUEST_DELAY} seconds...")
-                time.sleep(TOO_MANY_REQUEST_DELAY)  
+                time.sleep(TOO_MANY_REQUEST_DELAY)
             else:
                 print(f"Failed to fetch articles for category: {category.name}. Status Code: {response.status_code}")
                 retries += 1
-                time.sleep(REQUEST_DELAY) 
+                time.sleep(REQUEST_DELAY)
 
         if retries == MAX_RETRIES:
             print(f"Max retries reached for category: {category.name}. Skipping...")
-        time.sleep(REQUEST_DELAY)  
+        time.sleep(REQUEST_DELAY)
+
 
 #cnn크롤링
 def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
@@ -220,44 +225,6 @@ def fetch_and_store_cnn_news():
         else:
             print(f"No articles found for category: {category.name}")
 
-# redis의 데이터 postgresql로 이동
-@shared_task
-def transfer_data_to_postgresql():
-    try:
-        conn = get_postgres_connection()
-        cursor = conn.cursor()
-
-        keys = redis_client.keys('news:*')
-        for key in keys:
-            news_data = json.loads(redis_client.get(key))
-            news_id = key.split(':')[2]
-            title = news_data.get('title', '')
-            abstract = news_data.get('abstract', '')
-            url = news_data.get('url', '')
-            published_date = news_data.get('published_date', '')
-            category_name = news_data.get('category', '')
-
-            category, _ = Category.objects.get_or_create(name=category_name)
-
-            # PostgreSQL에 데이터 저장
-            cursor.execute(
-                """
-                INSERT INTO materials_news (id, title, abstract, url, published_date, category_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (id) DO NOTHING;
-                """,
-                (news_id, title, abstract, url, published_date, category.id, datetime.now())
-            )
-            redis_client.delete(key)
-
-        conn.commit()
-        print(f"[{datetime.now()}] Data transfer complete. {len(keys)} items moved.")
-    
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        cursor.close()
-        conn.close()
 
 # csv파일로 저장
 def save_redis_to_csv(file_name="news_data.csv"):
