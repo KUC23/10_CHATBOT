@@ -1,7 +1,29 @@
 readme
 
 gemini.ipynb - gemini 모델 테스트용
-gpt.ipynb - gpt 모델 테스트용, 사용하지 않음
+셀 구성
+- Gemini API key 입력 
+- 기사 데이터 수집
+- full code
+- 요약 생성
+- 단어 추출
 
-gemini.ipynb
+Gemini API key 실행해서 직접 입력할 것
+기사 데이터는 data폴더 안에 csv파일로 들어있어야 함
 
+article은 csv파일을 읽은 pandas.dataframe중 한 줄
+각 기능은 article을 사용해서 기사에 접근
+article
+|title|link|content|
+
+summary: list
+list 안의 요소는 string
+`summary[0]`: 영어 요약문
+`summary[1]`: 한국어 요약문
+
+vocab: {단어:뜻} 형태의 dictionary
+key와 value는 모두 string
+
+---
+
+gemini.py
