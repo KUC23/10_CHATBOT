@@ -25,10 +25,13 @@ class LoginView(APIView):
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
+                "redirect_url": "/"  
             }, status=status.HTTP_200_OK)
 
-        return Response({"detail": "비밀번호 또는 사용자 이름이 잘못되었습니다."},
-                        status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"detail": "비밀번호 또는 사용자 이름이 잘못되었습니다."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
 class SignupView(APIView):
     def get(self, request, username):
@@ -86,12 +89,15 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"] 
+            refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
-            token.blacklist()  
-            return Response({"message": "성공적으로 로그아웃되었습니다."}, status=status.HTTP_200_OK)
+            token.blacklist()
+            return Response(
+                {"message": "성공적으로 로그아웃되었습니다.", "redirect_url": "/login/"}, 
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)    
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeleteAccountView(APIView):
@@ -102,7 +108,11 @@ class DeleteAccountView(APIView):
         serializer.is_valid(raise_exception=True)
         user = request.user
         user.delete()
-        return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "회원탈퇴가 완료되었습니다.", "redirect_url": "/"},
+            status=status.HTTP_200_OK
+        )
+
 
 
 class UpdateUserView(UpdateAPIView):
@@ -127,8 +137,12 @@ class PasswordChangeView(APIView):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "비밀번호가 변경되었습니다."}, status=status.HTTP_200_OK)
+            return Response({
+                "message": "비밀번호가 변경되었습니다.",
+                "redirect_url": "/login/"  
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class CategoryListView(APIView):

@@ -19,7 +19,8 @@ username란에 핸드폰번호 입력으로도 로그인 가능
 ```json
 {
   "refresh": "eyJhbGciOiJIUzUxMiIsInR...",
-  "access": "eyJhbGciOiJIUzUxMiIsInR..."
+  "access": "eyJhbGciOiJIUzUxMiIsInR...",
+  "redirect_url": "/"
 }
 ```
 - response(실패, 401 unauthorized)
@@ -98,7 +99,8 @@ endpoint: api/v1/accounts/logout/
 - response(성공, 200 Ok)
 ```json
 {
-    "message": "성공적으로 로그아웃되었습니다."
+    "message": "성공적으로 로그아웃되었습니다.",
+    "redirect_url": "/login/"
 }
 ```
 
@@ -120,7 +122,8 @@ endpoint: api/v1/accounts/delete/
 - response(성공, 200 ok)
 ```json
 {
-    "message": "회원탈퇴가 완료되었습니다."
+    "message": "회원탈퇴가 완료되었습니다.", 
+    "redirect_url": "/"
 }
 ```
 
@@ -235,7 +238,8 @@ endpoint: api/v1/accounts/password/change/
 - response(성공, 200 Ok)
 ```json
 {
-    "message": "비밀번호가 변경되었습니다."
+    "message": "비밀번호가 변경되었습니다.",
+    "redirect_url": "/login/"
 }
 ```
 - response(실패, 400 bad request)기존 비밀번호 불일치
