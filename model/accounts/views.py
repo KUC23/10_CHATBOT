@@ -29,7 +29,7 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(
-            {"detail": "비밀번호 또는 사용자 이름이 잘못되었습니다."},
+            {"detail": "비밀번호 또는 사용자 이름이 잘못되었습니다.", "redirect_url": None},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
@@ -38,7 +38,7 @@ class SignupView(APIView):
         if request.user.is_authenticated and request.user.username == username:
             serializer = RegisterUserSerializer(request.user)
             return Response(serializer.data)
-        return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"error": "권한이 없습니다.", "redirect_url": None}, status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request):
         serializer = RegisterUserSerializer(data=request.data)
@@ -75,7 +75,7 @@ class DashboardCompleteView(APIView):
         if category_ids:
             valid_categories = Category.objects.filter(id__in=category_ids)
             if not valid_categories.exists():
-                return Response({"error": "유효하지 않은 카테고리 ID입니다."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "유효하지 않은 카테고리 ID입니다.", "redirect_url": None}, status=status.HTTP_400_BAD_REQUEST)
             user.categories.set(valid_categories)
 
         user.save()
@@ -97,7 +97,12 @@ class LogoutView(APIView):
                 status=status.HTTP_200_OK
             )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "status": "error",
+                "message": "알 수 없는 오류가 발생했습니다.",
+                "details": str(e),  
+                "redirect_url": None
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeleteAccountView(APIView):
@@ -112,7 +117,6 @@ class DeleteAccountView(APIView):
             {"message": "회원탈퇴가 완료되었습니다.", "redirect_url": "/"},
             status=status.HTTP_200_OK
         )
-
 
 
 class UpdateUserView(UpdateAPIView):

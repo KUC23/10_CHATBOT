@@ -50,7 +50,7 @@ class User(AbstractUser):
         null=True,
         help_text="사용자가 기사를 받을 소셜 계정 provider"
     )
-
+    is_first_login = models.BooleanField(default=True)
     USERNAME_FIELD = 'username' 
     REQUIRED_FIELDS = ['phone_number']  
 

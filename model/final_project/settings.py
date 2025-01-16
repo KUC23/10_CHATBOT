@@ -219,7 +219,7 @@ SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True  
 
-LOGIN_REDIRECT_URL = '/api/v1/socials/linked-social-accounts/'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/api/v1/accounts/login/'
 
 SECRET_KEY = config("SECRET_KEY")

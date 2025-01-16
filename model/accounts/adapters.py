@@ -1,5 +1,5 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-
+from django.shortcuts import resolve_url
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     # 사용자 소셜계정 연동
@@ -16,4 +16,12 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.save()
         return user
 
+    # 회원가입 및 로그인 후 redirect
+    def get_login_redirect_url(self, request):
+        user = request.user
+        if user.is_authenticated and user.is_social_connected and user.is_first_login:
+            user.is_first_login = False  
+            user.save()
+            return resolve_url("/preferences/")
+        return resolve_url("/")  
 

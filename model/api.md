@@ -208,7 +208,13 @@ endpoint: api/v1/accounts/update/
     "default_social_provider": "kakao"
 }
 ```
-- response(302 Found): 리다이렉트
+- response(302 Found): 
+```json
+{
+    "message": "수정 완료", 
+    "redirect_url": "/profile/username/"
+    }
+```
 
 - response(실패, 400 bad request) 정보입력 오류
 ```json
@@ -274,7 +280,8 @@ endpoint: api/v1/socials/check-user/
 ```json
 {
     "status": "not_exists",
-    "message": "새 계정을 생성할 수 있습니다."
+    "message": "새 계정을 생성할 수 있습니다.",
+    "redirect_url": "/preferences/"
 }
 ```
 - response(성공, 200ok) 중복되는 이메일/전화번호가 있음(여전히200ok) ->사용자가 계정을 연동할지 새로운 계정을 생성할지 선택
@@ -285,7 +292,16 @@ endpoint: api/v1/socials/check-user/
     "options": {
         "link_account": true,
         "create_new_account": true
-    }
+    },
+    "redirect_url": "/social-link-or-create/"
+}
+```
+- response(성공, 200ok) 이미 연동된 계정
+```json
+{
+    "status": "exists",
+    "message": "이미 카카오/디스코드 계정이 연동된 상태입니다.",
+    "redirect_url": "/preferences/"
 }
 ```
 
@@ -306,14 +322,16 @@ endpoint: api/v1/socials/social-link-or-create/
 ```json
 {
     "status": "success",
-    "message": "기존 계정에 소셜 계정이 연동되었습니다."
+    "message": "기존 계정에 소셜 계정이 연동되었습니다.",
+    "redirect_url": "/"
 }
 ```
 - response(성공, 200 ok) decision=='create_new'
 ```json
 {
     "status": "success",
-    "message": "새 계정이 생성되었습니다."
+    "message": "새 계정이 생성되었습니다.",
+    "redirect_url": "/preferences/"
 }
 ```
 
@@ -321,9 +339,35 @@ endpoint: api/v1/socials/social-link-or-create/
 ```json
 {
     "status": "error",
-    "message": "잘못된 요청입니다."
+    "message": "잘못된 요청입니다.",
+    "redirect_url": null
 }
 ```
+- response(실패, 400 bad request) 이미 연동된 계정
+```json
+{
+    "status": "error",
+    "message": "이미 연결된 소셜 계정입니다.",
+    "redirect_url": null
+}
+```
+- response(실패, 400 bad request) 계정 없음 
+```json
+{
+    "status": "error",
+    "message": "연동할 계정을 찾을 수 없습니다.",
+    "redirect_url": null
+}
+```
+- response(실패, 400 bad request) 정보 입력 오류
+```json
+{
+    "status": "error",
+    "message": "계정 생성 중 문제가 발생했습니다. 입력 정보를 확인해주세요.",
+    "redirect_url": null
+}
+```
+
 
 9. 소셜 회원가입 : **포스트맨에서 확인 불가** (POST)
 (사유: Django는 CSRF 보호 메커니즘이 있는데, OAuth2 인증 흐름에서는 CSRF 토큰을 사용 불가 ->CSRF관련 오류 발생) -> **예상되는 API구조임**
@@ -371,13 +415,15 @@ endpoint: api/v1/socials/link-social-account/
 - response(성공, 200 Ok)
 ```json
 {
-    "message": "discord 계정이 성공적으로 연결되었습니다."
+    "message": "discord 계정이 성공적으로 연결되었습니다.",
+    "redirect_url": "/profile/username/"
 }
 ```
 - response(실패, 400 Bad request) 
 ```json
 {
-    "message": "이미 연결된 소셜 계정입니다."
+    "message": "이미 연결된 소셜 계정입니다.",
+    "redirect_url": null
 }
 ```
 
@@ -430,14 +476,16 @@ endpoint: api/v1/socials/default-social-accounts/
 ```json
 {
     "status": "success",
-    "message": "discord 계정이 기본 소셜 계정으로 설정되었습니다."
+    "message": "discord 계정이 기본 소셜 계정으로 설정되었습니다.",
+    "redirect_url": "/profile/username/"
 }
 ```
 - response(실패, 400 Bad reqeust)
 ```json
 {
     "status": "error",
-    "message": "연결되지 않은 소셜 계정입니다."
+    "message": "연결되지 않은 소셜 계정입니다.",
+    "redirect_url": null
 }
 ```
 13. 카테고리 조회 (GET)
@@ -517,13 +565,14 @@ endpoint: api/v1/accounts/preferences/
 ```json
 {
     "message": "회원가입 완료",
-    "redirect_url": "/profile/{str:username}/"
+    "redirect_url": "/profile/username/"
 }
 ```
 - response(실패, 400 Bad reqeust)
 ```json
 {
-    "error": "유효하지 않은 카테고리 ID입니다."
+    "error": "유효하지 않은 카테고리 ID입니다.",
+    "redirect_url": null
 }
 ```
 
@@ -584,7 +633,7 @@ endpoints: api/v1/chatbots/news/
 }
 ```
 
-- response(실패, 400 Bad request) 관심사 설정 안 됨됨
+- response(실패, 400 Bad request) 관심사 설정 안 됨
 ```json
 {'error': 'No categories set for this user'}
 ```
