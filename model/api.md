@@ -1,4 +1,3 @@
-**포스트맨에서 리다이렉트 요청 성공여부 확인불가**
 1. 로그인 요청 (POST)
 endpoint: api/v1/accounts/login/
 - request body
@@ -390,11 +389,15 @@ endpoint: api/v1/socials/social-link-or-create/
         "user": {
             "id": 1,
             "username": "testuser",
-            "email": "test@example.com",
-            "nickname": "nick"
+            "email": "test@example.com"
         }
     }
 }
+
+현재 redirect 설정
+- 첫 회원가입 시: preferences로 이동("redirect_url": "/preferences/")
+- 이후 로그인 시: 메인화면으로 이동("redirect_url": "/")
+
 ```
 
 10. 카카오/디스코드 계정 연동 (POST)
@@ -419,11 +422,11 @@ endpoint: api/v1/socials/link-social-account/
     "redirect_url": "/profile/username/"
 }
 ```
-- response(실패, 400 Bad request) 
+- response(성공, 200 Ok)
 ```json
 {
-    "message": "이미 연결된 소셜 계정입니다.",
-    "redirect_url": null
+    "message": "이미 kakao/discord 계정이 연동되어 있습니다.",
+    "redirect_url": "/profile/username/"
 }
 ```
 
@@ -484,8 +487,8 @@ endpoint: api/v1/socials/default-social-accounts/
 ```json
 {
     "status": "error",
-    "message": "연결되지 않은 소셜 계정입니다.",
-    "redirect_url": null
+    "message": "discord 계정이 연결되지 않았습니다. 먼저 연동하세요.",
+    "redirect_url": "/link-social-account/"
 }
 ```
 13. 카테고리 조회 (GET)
@@ -564,7 +567,7 @@ endpoint: api/v1/accounts/preferences/
 - response(성공, 200 Ok)
 ```json
 {
-    "message": "회원가입 완료",
+    "message": "설정이 저장되었습니다.",
     "redirect_url": "/profile/username/"
 }
 ```

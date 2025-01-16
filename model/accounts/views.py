@@ -66,21 +66,27 @@ class DashboardCompleteView(APIView):
 
     def post(self, request):
         user = request.user
-        messenger_platform = request.data.get("messenger_platform")
-        category_ids = request.data.get("categories", [])
+        messenger_platform = request.data.get("messenger_platform") 
+        category_ids = request.data.get("categories", [])  
 
         if messenger_platform:
+            # 기본 소셜 제공자 설정
             user.default_social_provider = messenger_platform
-        
+            
+            # 소셜 계정 연결 상태 업데이트
+            if messenger_platform not in user.connected_social_providers:
+                user.connected_social_providers.append(messenger_platform)
+                user.is_social_connected = True
+
         if category_ids:
             valid_categories = Category.objects.filter(id__in=category_ids)
             if not valid_categories.exists():
-                return Response({"error": "유효하지 않은 카테고리 ID입니다.", "redirect_url": None}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "유효하지 않은 카테고리 ID입니다."}, status=status.HTTP_400_BAD_REQUEST)
             user.categories.set(valid_categories)
 
         user.save()
         return Response(
-            {"message": "회원가입 완료", "redirect_url": f"/profile/{user.username}/"},
+            {"message": "설정이 저장되었습니다.", "redirect_url": f"/profile/{user.username}/"},
             status=status.HTTP_200_OK
         )
     

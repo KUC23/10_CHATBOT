@@ -108,11 +108,19 @@ DATABASES = {
     }
 }
 
-# Redis 설정
-# REDIS_HOST = "redis"  ##docker로 실행 시
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
-REDIS_DB = 1
+REDIS_SETTINGS = {
+    'host': '127.0.0.1',  # 로컬
+    # 'host': 'redis',  # 도커로 실행 시
+    'port': 6379,
+    'db': 1,
+    'decode_responses': True
+}
+
+# Redis의 호스트, 포트, DB 값 참조
+REDIS_HOST = REDIS_SETTINGS['host']
+REDIS_PORT = REDIS_SETTINGS['port']
+REDIS_DB = REDIS_SETTINGS['db']
+
 
 
 CACHES = {

@@ -16,7 +16,7 @@ def find_existing_user(email=None, phone_number=None):
     return None
 
 
-# 중복된 이메일, 핸드폰번호 확인
+# 소셜계정으로 회원가입 할 때, 중복된 이메일과 핸드폰번호 확인
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -51,7 +51,7 @@ class CheckUserView(APIView):
             "redirect_url": "/preferences/" 
         })
 
-# 중복된 계정일 때 연동 또는 새로운 계정 생성
+# 소셜계정으로 회원가입 할 때, 중복된 이메일/핸드폰이면 기존계정과 연동 또는 새로운 계정 생성
 class SocialLinkOrCreateView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = SocialAccountSerializer(data=request.data)
@@ -121,9 +121,8 @@ class SocialLinkOrCreateView(APIView):
         }, status=400)
 
 
-# 로그인한 사용자가 소셜계정을 연동하고 싶을 때
+# 로그인한 사용자가 새로운 소셜계정을 연동하고 싶을 때
 class LinkSocialAccountView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -131,23 +130,27 @@ class LinkSocialAccountView(APIView):
         social_id = request.data.get('social_id')
         user = request.user
 
-        if CustomSocialAccount.objects.filter(provider=provider, uid=social_id).exists():
+        # 이미 연동된 소셜 계정인지 확인
+        existing_account = CustomSocialAccount.objects.filter(provider=provider, uid=social_id, user=user).exists()
+        if existing_account:
             return Response({
-                "status": "error",
-                "message": "이미 연결된 소셜 계정입니다.",
-                "redirect_url": None
-                }, status=400)
+                "status": "success",
+                "message": f"이미 {provider} 계정이 연동되어 있습니다.",
+                "redirect_url": f"/profile/{user.username}/"
+            })
 
+        # 새 소셜 계정을 연동
         CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
         if provider not in user.connected_social_providers:
             user.connected_social_providers.append(provider)
+
         user.is_social_connected = True
         user.save()
 
         return Response({
-            "message": f"{provider} 계정이 성공적으로 연결되었습니다.", 
+            "message": f"{provider} 계정이 성공적으로 연동되었습니다.",
             "redirect_url": f"/profile/{user.username}/"
-            })
+        })
 
 
 # 소셜계정 연동여부 확인 /안쓰는 뷰이면 삭제 가능
@@ -167,15 +170,15 @@ class SetDefaultSocialProviderView(APIView):
 
     def post(self, request):
         provider = request.data.get('provider')
+        user = request.user
 
-        if provider not in request.user.connected_social_providers:
+        if provider not in user.connected_social_providers:
             return Response({
                 "status": "error",
-                "message": "연결되지 않은 소셜 계정입니다.",
-                "redirect_url": None
+                "message": f"{provider} 계정이 연결되지 않았습니다. 먼저 연동하세요.",
+                "redirect_url": "/link-social-account/"
             }, status=400)
-        
-        user=request.user
+
         user.default_social_provider = provider
         user.save()
 

@@ -4,14 +4,9 @@ from rest_framework import status
 from materials.models import News
 import redis
 import json
+from django.conf import settings
 
-# Redis 설정
-redis_client = redis.StrictRedis(
-    host='127.0.0.1',
-    port=6379,
-    db=1,
-    decode_responses=True
-)
+redis_client = redis.StrictRedis(**settings.REDIS_SETTINGS)
 
 class SendArticlesToChatbotView(APIView):
     def post(self, request, *args, **kwargs):

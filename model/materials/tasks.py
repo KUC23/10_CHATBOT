@@ -20,23 +20,20 @@ from webdriver_manager.chrome import ChromeDriverManager
 from django.db import transaction
 from psycopg2 import sql
 
-# Redis 설정
-redis_client = redis.StrictRedis(
-    # host="redis", #도커로 실행 시
-    host='127.0.0.1',
-    port=6379,
-    db=1,
-    decode_responses=True
-)
+from django.conf import settings
+
+redis_client = redis.StrictRedis(**settings.REDIS_SETTINGS)
+
 
 # postgresql 설정
 def get_postgres_connection():
+    db_config = settings.DATABASES['default']
     return psycopg2.connect(
-        dbname=config("POSTGRES_DB"),
-        user=config("YOUR_POSTGRESQL_USERNAME"),
-        password=config("YOUR_POSTGRESQL_PASSWORD"),
-        host="127.0.0.1",
-        port="5432"
+        dbname=db_config['NAME'],
+        user=db_config['USER'],
+        password=db_config['PASSWORD'],
+        host=db_config['HOST'],
+        port=db_config['PORT']
     )
 
 # nyt api에서 받아와 db에 저장

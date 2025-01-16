@@ -6,13 +6,8 @@ from accounts.models import Category
 import redis
 import json
 
-redis_client = redis.StrictRedis(
-    # host='redis', #도커로 실행 시
-    host='127.0.0.1',
-    port=6379,
-    db=1,
-    decode_responses=True
-)
+from django.conf import settings
+redis_client = redis.StrictRedis(**settings.REDIS_SETTINGS)
 
 # class NewsView(APIView):
 #     # 유저 관심사에 맞는 뉴스 조회(redis 먼저 확인 후 postgresql)
