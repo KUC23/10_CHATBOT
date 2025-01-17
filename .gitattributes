@@ -1,0 +1,27 @@
+# 모든 파일에 대해 자동으로 줄 바꿈 문자를 처리합니다.
+# Git이 플랫폼에 맞게 자동으로 변환해줍니다.
+* text=auto
+
+# 각 파일 확장자별로 줄 바꿈 문자를 LF(Line Feed)로 강제 지정합니다.
+# eol=lf는 End Of Line을 LF로 설정한다는 의미입니다.
+
+# 일반 텍스트 파일
+*.txt text eol=lf
+
+# 자바스크립트 관련 파일
+*.js text eol=lf    # 일반 자바스크립트 파일
+*.jsx text eol=lf   # React JSX 파일
+
+# 타입스크립트 관련 파일
+*.ts text eol=lf    # 일반 타입스크립트 파일
+*.tsx text eol=lf   # React TypeScript JSX 파일
+
+# 기타 웹 개발 파일
+*.json text eol=lf  # JSON 설정 파일
+*.css text eol=lf   # CSS 스타일 파일
+*.md text eol=lf    # 마크다운 문서
+
+# Git 설정 파일
+.gitignore text eol=lf       # Git이 무시할 파일 목록
+.gitattributes text eol=lf   # Git 속성 설정 파일
+
