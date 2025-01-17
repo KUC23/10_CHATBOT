@@ -19,10 +19,17 @@ def find_existing_user(email=None, phone_number=None):
 # 소셜계정으로 회원가입 할 때, 중복된 이메일과 핸드폰번호 확인
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        phone_number = request.data.get('phone_number')
+        email = request.data.get('email', '').strip()
+        phone_number = request.data.get('phone_number', '').strip()
         provider = request.data.get('provider')
         social_id = request.data.get('social_id')
+
+        if not email and not phone_number:
+            return Response({
+                "status": "error",
+                "message": "이메일 또는 휴대폰 번호를 입력해야 합니다.",
+                "redirect_url": None
+            }, status=400)
 
         existing_user = find_existing_user(email=email, phone_number=phone_number)
         existing_social = CustomSocialAccount.objects.filter(provider=provider, uid=social_id).exists()
@@ -31,7 +38,7 @@ class CheckUserView(APIView):
             return Response({
                 "status": "exists",
                 "message": f"이미 {provider} 계정이 연동된 상태입니다.",
-                "redirect_url": "/preferences/"  
+                "redirect_url": "/preferences/"
             })
 
         if existing_user:
@@ -42,13 +49,13 @@ class CheckUserView(APIView):
                     "link_account": True,
                     "create_new_account": True
                 },
-                "redirect_url": "/social-link-or-create/" 
+                "redirect_url": "/social-link-or-create/"
             })
 
         return Response({
             "status": "not_exists",
             "message": "새 계정을 생성할 수 있습니다.",
-            "redirect_url": "/preferences/" 
+            "redirect_url": "/preferences/"
         })
 
 # 소셜계정으로 회원가입 할 때, 중복된 이메일/핸드폰이면 기존계정과 연동 또는 새로운 계정 생성

@@ -6,7 +6,6 @@ import json
 import csv
 from datetime import datetime
 from celery import shared_task
-from decouple import config
 from accounts.models import Category
 from materials.models import News
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
@@ -19,8 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from django.db import transaction
 from psycopg2 import sql
-
 from django.conf import settings
+from chatbots.chatbot import learnChat
 
 redis_client = redis.StrictRedis(**settings.REDIS_SETTINGS)
 
@@ -38,11 +37,11 @@ def get_postgres_connection():
 
 # nyt api에서 받아와 db에 저장
 @shared_task
-def fetch_and_store_news(news_source="NYTimes"):
-    API_KEY = config("NYT_API_KEY")
-    MAX_RETRIES = 3  # 최대 재시도 횟수
-    REQUEST_DELAY = 5  # 기본 요청 간 대기 시간 (초)
-    TOO_MANY_REQUEST_DELAY = 60  # Too Many Requests 시 대기 시간 (초)
+def fetch_and_store_nyt_news(news_source="NYTimes"):
+    API_KEY = settings.NYT_API_KEY
+    MAX_RETRIES = 3  
+    REQUEST_DELAY = 5  
+    TOO_MANY_REQUEST_DELAY = 60  
 
     categories = Category.objects.all()
     if not categories.exists():
@@ -68,30 +67,40 @@ def fetch_and_store_news(news_source="NYTimes"):
 
                 for article in articles[:5]:
                     news_url = article.get('url', 'No URL')
+                    title = article.get('title', 'No Title')
+                    abstract = article.get('abstract', 'No Abstract')
+
+                    # 요약 및 단어 추출
+                    chat = learnChat(abstract)
+                    summary_korean = chat.translate(abstract)
+                    vocab = chat.vocab()
+
+                    # Redis 저장
                     redis_key = f"news:{category.name.lower()}:{news_url}"
                     redis_value = json.dumps({
-                        'title': article.get('title', 'No Title'),
-                        'abstract': article.get('abstract', 'No Abstract'),
+                        'title': title,
+                        'abstract': abstract,
+                        'summary_english': abstract,
+                        'summary_korean': summary_korean,
+                        'vocab': vocab,
                         'url': news_url,
-                        'published_date': article.get('published_date', 'No Date'),
                         'category': category.name
                     })
-
-                    
                     redis_client.set(redis_key, redis_value, ex=86400)
 
-                
+                    # PostgreSQL 저장
                     News.objects.update_or_create(
                         url=news_url,
                         defaults={
-                            'title': article.get('title', 'No Title'),
-                            'abstract': article.get('abstract', 'No Abstract'),
-                            'published_date': article.get('published_date', 'No Date'),
+                            'title': title,
+                            'abstract': abstract,
+                            'summary_english': abstract,
+                            'summary_korean': summary_korean,
+                            'vocab': vocab,
                             'category': category
                         }
                     )
-
-                break  # 성공하면 반복 종료
+                break 
             elif response.status_code == 429:
                 print(f"Too many requests for category: {category.name}. Retrying in {TOO_MANY_REQUEST_DELAY} seconds...")
                 time.sleep(TOO_MANY_REQUEST_DELAY)
@@ -103,6 +112,7 @@ def fetch_and_store_news(news_source="NYTimes"):
         if retries == MAX_RETRIES:
             print(f"Max retries reached for category: {category.name}. Skipping...")
         time.sleep(REQUEST_DELAY)
+
 
 
 #cnn크롤링
@@ -192,29 +202,37 @@ def fetch_and_store_cnn_news():
             continue
 
         category_url = f"https://edition.cnn.com/{source_category}"
-        print(f"Fetching articles for category: {category.name} (URL: {category_url})")
-
         articles = scrape_cnn_news_with_selenium(category_url)
 
         if articles:
             for article in articles[:5]:  
+                chat = learnChat(article['content'])
+                summary_english = chat.summarize()
+                summary_korean = chat.translate(summary_english)
+                vocab = chat.vocab()
+
+                # Redis 저장
                 redis_key = f"news:{category.name.lower()}:{article['url']}"
                 redis_value = json.dumps({
                     'title': article['title'],
-                    'abstract': article['content'],  # CNN 기사 전문을 abstract로 저장
+                    'abstract': article['content'],
+                    'summary_english': summary_english,
+                    'summary_korean': summary_korean,
+                    'vocab': vocab,
                     'url': article['url'],
-                    'published_date': time.strftime('%Y-%m-%d %H:%M:%S'),  
                     'category': category.name
                 })
-                redis_client.set(redis_key, redis_value, ex=86400)  
+                redis_client.set(redis_key, redis_value, ex=86400)
 
                 # PostgreSQL 저장
                 News.objects.update_or_create(
                     url=article['url'],
                     defaults={
                         'title': article['title'],
-                        'abstract': article['content'],  # CNN 기사 전문
-                        'published_date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'abstract': article['content'],
+                        'summary_english': summary_english,
+                        'summary_korean': summary_korean,
+                        'vocab': vocab,
                         'category': category,
                     }
                 )
@@ -223,35 +241,35 @@ def fetch_and_store_cnn_news():
             print(f"No articles found for category: {category.name}")
 
 
-# csv파일로 저장
-def save_redis_to_csv(file_name="news_data.csv"):
-    keys = redis_client.keys('news:*')
-    if not keys:
-        print("No data in Redis to save.")
-        return
+# # csv파일로 저장
+# def save_redis_to_csv(file_name="news_data.csv"):
+#     keys = redis_client.keys('news:*')
+#     if not keys:
+#         print("No data in Redis to save.")
+#         return
 
-    with open(file_name, mode='w', newline='', encoding='utf-8') as csv_file:
-        fieldnames = ['Title', 'Abstract', 'URL', 'Published Date', 'Category']
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+#     with open(file_name, mode='w', newline='', encoding='utf-8') as csv_file:
+#         fieldnames = ['Title', 'Abstract', 'URL', 'Published Date', 'Category']
+#         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
-        writer.writeheader()
+#         writer.writeheader()
 
-        for key in keys:
-            news_data = json.loads(redis_client.get(key))
-            writer.writerow({
-                'Title': news_data.get('title', ''),
-                'Abstract': news_data.get('abstract', ''),
-                'URL': news_data.get('url', ''),
-                'Published Date': news_data.get('published_date', ''),
-                'Category': news_data.get('category', '')
-            })
+#         for key in keys:
+#             news_data = json.loads(redis_client.get(key))
+#             writer.writerow({
+#                 'Title': news_data.get('title', ''),
+#                 'Abstract': news_data.get('abstract', ''),
+#                 'URL': news_data.get('url', ''),
+#                 'Published Date': news_data.get('published_date', ''),
+#                 'Category': news_data.get('category', '')
+#             })
 
-    print(f"Data successfully saved to {file_name}.")
+#     print(f"Data successfully saved to {file_name}.")
 
-# celery task: redis 데이터 csv로 저장
-@shared_task
-def save_news_to_csv_task(file_name="news_data.csv"):
-    save_redis_to_csv(file_name=file_name)
+# # celery task: redis 데이터 csv로 저장
+# @shared_task
+# def save_news_to_csv_task(file_name="news_data.csv"):
+#     save_redis_to_csv(file_name=file_name)
 
 
 def setup_periodic_tasks():
@@ -269,7 +287,7 @@ def setup_periodic_tasks():
         name='Fetch and Store NYT News Daily',
         defaults={
             'interval': schedule,
-            'task': 'materials.tasks.fetch_and_store_news',
+            'task': 'materials.tasks.fetch_and_store_nyt_news',
             'args': '[]',
             'kwargs': '{}',
             'enabled': True,

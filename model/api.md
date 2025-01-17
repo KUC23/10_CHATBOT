@@ -303,6 +303,14 @@ endpoint: api/v1/socials/check-user/
     "redirect_url": "/preferences/"
 }
 ```
+- response(실패, 400 Bad request)
+```json
+{
+    "status": "error",
+    "message": "이메일 또는 휴대폰 번호를 입력해야 합니다.",
+    "redirect_url": null
+}
+```
 
 8. 소셜로그인 중복계정 처리: link=연동/create_new=새  계정 생성 (POST)
 endpoint: api/v1/socials/social-link-or-create/
@@ -580,7 +588,7 @@ endpoint: api/v1/accounts/preferences/
 ```
 
 
-16. 기사를 챗봇에 전달(POST)
+16. 관심사에 맞는 데이터를 DB에서 찾아서 전달(POST)
 endpoints: api/v1/chatbots/news/
 
 - headers
@@ -638,5 +646,5 @@ endpoints: api/v1/chatbots/news/
 
 - response(실패, 400 Bad request) 관심사 설정 안 됨
 ```json
-{'error': 'No categories set for this user'}
+{"error": "No categories set for this user"}
 ```
