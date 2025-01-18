@@ -601,44 +601,55 @@ endpoints: api/v1/chatbots/news/
 없음
 - response(성공, 200 Ok)
 ```json
-{
-    "article": {
-        "article_id": number,
-        "title": "string",
-        "content": "string",
-        "category": "Health",
-        "url": "http://url",
-        "published_date": "2015-04-16 18:13:18"
-    }
-}
+    "Technology": {
+        "title": "title",
+        "abstract": "abstract",
+        "summary": {
+            "english": "english summary",
+            "korean": "한글 요약\n"
+        },
+        "vocab": {
+            "단어1:": "뜻1",
+            "단어2:": "뜻2",
+            "단어3": "뜻3"
+        },
+        "url": "https://url",
+        "category": "Technology"
+    },
 ```
 - response(성공, 200 Ok) 관심사가 여러 개일 경우 모두 반환
 ```json
 {
     "articles": {
-        "Main": {
-            "article_id": 28,
-            "title": "string",
-            "content": "abstract", #NYT는 요약본이, CNN은 기사전문이 챗봇에게 전달됩니다.
-            "category": "Main",
-            "url": "https://url",
-            "published_date": "2025-01-09 05:01:07"
-        },
         "Technology": {
-            "article_id": 32,
-            "title": "string",
-            "content": "abstract",
-            "category": "Technology",
+            "title": "title",
+            "abstract": "abstract",
+            "summary": {
+                "english": "english summary",
+                "korean": "한글 요약\n"
+            },
+            "vocab": {
+                "단어1:": "뜻1",
+                "단어2:": "뜻2",
+                "단어3": "뜻3"
+            },
             "url": "https://url",
-            "published_date": "2025-01-08 19:30:07"
+            "category": "Technology"
         },
-        "Business": {
-            "article_id": 36,
-            "title": "string",
-            "content": "abstract",
-            "category": "Business",
+        "Science": {
+            "title": "title",
+            "abstract": "abstract",
+            "summary": {
+                "english": "english summary",
+                "korean": "한글 요약\n"
+            },
+            "vocab": {
+                "단어1:": "뜻1",
+                "단어2:": "뜻2",
+                "단어3": "뜻3"
+            },
             "url": "https://url",
-            "published_date": "2025-01-09 10:01:25"
+            "category": "Science"
         }
     }
 }

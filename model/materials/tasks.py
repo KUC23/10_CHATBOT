@@ -121,6 +121,22 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
     options.headless = True
     options.add_argument("--disable-gpu")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") #도커실행 시 필수
+    # #로컬 실행 시 이하 반드시 주석처리(도커에서 크롤링 시 필요한 설정)
+    # options = webdriver.ChromeOptions()
+    # options.add_argument("--disable-gpu")
+    # options.add_argument("--disable-extensions")
+    # options.add_argument("--disable-software-rasterizer")
+    # options.add_argument("--window-size=1920,1080")
+    # options.binary_location = "/usr/bin/google-chrome" 
+    # options.add_argument("--no-sandbox") 
+    # options.add_argument("--disable-dev-shm-usage") 
+    # options.add_argument("--headless")  
+    # driver = webdriver.Chrome(
+    # service=Service("/usr/local/bin/chromedriver"),
+    # options=options
+    # ) #여기까지 주석처리
+
 
     try:
         retries = 0

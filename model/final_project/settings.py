@@ -102,15 +102,15 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        # 'HOST': config("POSTGRES_HOST"), ##docker로 실행 시
-        'HOST': "localhost", 
+        # 'HOST': config("POSTGRES_HOST"), ##로컬실행 시 반드시 주석처리
+        'HOST': "localhost", # 도커실행 시 반드시 주석처리
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
 REDIS_SETTINGS = {
-    'host': '127.0.0.1',  # 로컬
-    # 'host': 'redis',  # 도커로 실행 시
+    'host': '127.0.0.1',  # 도커실행 시 반드시 주석처리
+    # 'host': 'redis',  ##로컬실행 시 반드시 주석처리
     'port': 6379,
     'db': 1,
     'decode_responses': True
@@ -143,7 +143,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-CELERY_TASK_TIME_LIMIT = 600
+CELERY_TASK_TIME_LIMIT = 4000
 CELERY_TIMEZONE = 'Asia/Seoul'
 CELERY_BEAT_SCHEDULE = {
     'fetch-news-every-day': {
