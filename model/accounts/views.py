@@ -66,16 +66,14 @@ class DashboardCompleteView(APIView):
 
     def post(self, request):
         user = request.user
-        messenger_platform = request.data.get("messenger_platform") 
-        category_ids = request.data.get("categories", [])  
+        default_social_provider = request.data.get("default_social_provider")
+        category_ids = request.data.get("categories", [])
 
-        if messenger_platform:
-            # 기본 소셜 제공자 설정
-            user.default_social_provider = messenger_platform
+        if default_social_provider:
+            user.default_social_provider = default_social_provider
             
-            # 소셜 계정 연결 상태 업데이트
-            if messenger_platform not in user.connected_social_providers:
-                user.connected_social_providers.append(messenger_platform)
+            if default_social_provider not in user.connected_social_providers:
+                user.connected_social_providers.append(default_social_provider)
                 user.is_social_connected = True
 
         if category_ids:
@@ -89,6 +87,7 @@ class DashboardCompleteView(APIView):
             {"message": "설정이 저장되었습니다.", "redirect_url": f"/profile/{user.username}/"},
             status=status.HTTP_200_OK
         )
+
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

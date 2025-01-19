@@ -153,7 +153,7 @@ endpoint: api/v1/accounts/<str:username>/
     "id": 2,
     "groups": [],
     "user_permissions": [],
-    "categories": [],
+    "categories": [1],
     "last_login": null,
     "is_superuser": false,
     "username": "user",
@@ -161,7 +161,7 @@ endpoint: api/v1/accounts/<str:username>/
     "date_joined": "2025-01-03T04:28:37.667999Z",
     "first_name": "u",
     "last_name": "ser",
-    "nickname": "사람",
+    "nickname": null,
     "birthday": "2000-01-01",
     "gender": null,
     "introduction": null,
@@ -568,7 +568,7 @@ endpoint: api/v1/accounts/preferences/
 - request body
 ```json
 {
-    "messenger_platform": "kakao", # or discord
+    "default_social_provider": "kakao", # or discord
     "categories": [category pk]
 }
 ```
