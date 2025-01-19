@@ -146,6 +146,13 @@ class LinkSocialAccountView(APIView):
                 "redirect_url": f"/profile/{user.username}/"
             })
 
+        if provider == user.default_social_provider:
+            return Response({
+                "status": "success",
+                "message": f"{provider} 계정은 이미 기본 제공자로 설정되어 있습니다.",
+                "redirect_url": f"/profile/{user.username}/"
+            })
+
         # 새 소셜 계정을 연동
         CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
         if provider not in user.connected_social_providers:
@@ -155,6 +162,7 @@ class LinkSocialAccountView(APIView):
         user.save()
 
         return Response({
+            "status": "success",
             "message": f"{provider} 계정이 성공적으로 연동되었습니다.",
             "redirect_url": f"/profile/{user.username}/"
         })
@@ -194,3 +202,40 @@ class SetDefaultSocialProviderView(APIView):
             "message": f"{provider} 계정이 기본 소셜 계정으로 설정되었습니다.",
             "redirect_url": f"/profile/{user.username}/"
         })
+
+class DeleteSocialAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        provider = request.data.get('provider')  
+        user = request.user
+
+        account_to_delete = CustomSocialAccount.objects.filter(user=user, provider=provider).first()
+        if not account_to_delete:
+            return Response({
+                "status": "error",
+                "message": f"{provider} 계정이 연결되어 있지 않습니다."
+            }, status=404)
+
+        if len(user.connected_social_providers) == 1:
+            return Response({
+                "status": "error",
+                "message": "적어도 하나의 소셜 계정은 유지되어야 합니다. 다른 계정을 추가한 후 시도하세요.",
+                "redirect_url": "/link-social-account/"
+            }, status=400)
+
+
+        account_to_delete.delete()
+
+        if provider in user.connected_social_providers:
+            user.connected_social_providers.remove(provider)
+
+        if user.default_social_provider == provider:
+            user.default_social_provider = user.connected_social_providers[0]  
+
+        user.save()
+
+        return Response({
+            "status": "success",
+            "message": f"{provider} 계정이 성공적으로 삭제되었습니다."
+        }, status=200)

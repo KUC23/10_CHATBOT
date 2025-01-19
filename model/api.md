@@ -426,13 +426,27 @@ endpoint: api/v1/socials/link-social-account/
 - response(성공, 200 Ok)
 ```json
 {
+    "status": "success",
     "message": "discord 계정이 성공적으로 연결되었습니다.",
     "redirect_url": "/profile/username/"
 }
 ```
+
 - response(성공, 200 Ok)
 ```json
 {
+    "status": "success",
+    "message": f"{provider} 계정은 이미 기본 제공자로 설정되어 있습니다.",
+    "redirect_url": f"/profile/{user.username}/"
+}
+```
+
+
+
+- response(성공, 200 Ok)
+```json
+{
+    "status": "success",
     "message": "이미 kakao/discord 계정이 연동되어 있습니다.",
     "redirect_url": "/profile/username/"
 }
@@ -659,3 +673,43 @@ endpoints: api/v1/chatbots/news/
 ```json
 {"error": "No categories set for this user"}
 ```
+
+
+17. 연결된 소셜계정 삭제(DELETE)
+endpoints: api/v1/socials/delete-social-account/
+
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+```json
+{
+    "provider": "discord" # or kakao
+}
+```
+- response(성공, 200 Ok)
+```json
+{
+    "status": "success",
+    "message": "kakao 계정이 성공적으로 삭제되었습니다."
+}
+```
+- response(실패, 400 Bad request)
+```json
+{
+    "status": "error",
+    "message": "적어도 하나의 소셜 계정은 유지되어야 합니다. 다른 계정을 추가한 후 시도하세요.",
+    "redirect_url": "/link-social-account/"
+}
+```
+- response(실패, 404  Not found) 
+```json
+{
+    "status": "error",
+    "message": "kakao 계정이 연결되어 있지 않습니다."
+}
+```
+

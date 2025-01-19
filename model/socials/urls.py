@@ -12,4 +12,5 @@ urlpatterns = [
     path('link-social-account/', views.LinkSocialAccountView.as_view(), name='link_social_account'),
     path('linked-social-accounts/', views.GetLinkedSocialAccountsView.as_view(), name='linked_social_accounts'),
     path('default-social-accounts/', views.SetDefaultSocialProviderView.as_view(), name='default_social_provider'),
+    path('delete-social-account/', views.DeleteSocialAccountView.as_view(), name='delete_social_account'),
     ]
