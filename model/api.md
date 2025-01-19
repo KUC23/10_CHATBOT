@@ -168,8 +168,8 @@ endpoint: api/v1/accounts/<str:username>/
     "email": "user@human.com",
     "phone_number": "01012345673",
     "is_active": true,
-    "is_social_connected": false,
-    "connected_social_providers": [],
+    "is_social_connected": "True",
+    "connected_social_providers": ['kakao'],
     "defalut_social_providers": "kakao" # or discord
 }
 ```
@@ -202,12 +202,12 @@ endpoint: api/v1/accounts/update/
     "birthday": null,
     "email": null,
     "phone_number": "01011111111",
-    "is_social_connected": false,
-    "connected_social_providers": [],
+    "is_social_connected": "True",
+    "connected_social_providers": ['kakao'],
     "default_social_provider": "kakao"
 }
 ```
-- response(302 Found): 
+- response(200 Ok): 
 ```json
 {
     "message": "수정 완료", 

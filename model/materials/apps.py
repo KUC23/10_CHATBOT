@@ -5,8 +5,7 @@ class MaterialsConfig(AppConfig):
     name = 'materials'
 
     def ready(self):
-        from django_celery_beat.models import PeriodicTask, IntervalSchedule
+        # from django_celery_beat.models import PeriodicTask, IntervalSchedule
         from materials.tasks import setup_periodic_tasks
 
-        # PeriodicTask 등록 함수 호출
         setup_periodic_tasks()
