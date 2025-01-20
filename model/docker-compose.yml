@@ -21,7 +21,7 @@ services:
     container_name: postgres_db
     restart: always
     networks:
-      - model_default 
+      - model_default
     environment:
       POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}
       POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}
@@ -37,7 +37,7 @@ services:
     container_name: redis
     restart: always
     networks:
-      - model_default  
+      - model_default
     ports:
       - "6379:6379"
     volumes:
@@ -48,8 +48,8 @@ services:
       context: .
     container_name: celery_worker
     networks:
-      - model_default  
-      - bridge  
+      - model_default
+      - bridge
     depends_on:
       - redis
       - db
@@ -84,12 +84,28 @@ services:
       DJANGO_SETTINGS_MODULE: "final_project.settings"
     command: celery -A final_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80" 
+    networks:
+      - model_default  
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin  
+
 volumes:
   pg_data:
   redis_data:
+  pgadmin_data:  
 
 networks:
   model_default:
-    driver: bridge 
+    driver: bridge
   bridge:
     driver: bridge
