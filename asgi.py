@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LLM.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', '10_CHATBOT.settings')
 
 application = get_asgi_application()

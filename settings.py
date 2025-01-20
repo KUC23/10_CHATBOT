@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'LLM.urls'
+ROOT_URLCONF = '10_CHATBOT.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'LLM.wsgi.application'
+WSGI_APPLICATION = '10_CHATBOT.wsgi.application'
 
 
 # Database
