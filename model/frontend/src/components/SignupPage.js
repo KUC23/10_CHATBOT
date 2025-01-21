@@ -112,7 +112,7 @@ const SignupPage = () => {
             >
                 <option value="">Select Platform</option>
                 <option value="kakao">Kakao</option>
-                <option value="discord">Discord</option>
+                {/* <option value="discord">Discord</option> */}
             </select>
             <button type="submit">Sign Up</button>
         </form>

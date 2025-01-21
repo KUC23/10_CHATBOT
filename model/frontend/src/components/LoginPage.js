@@ -79,11 +79,11 @@ const LoginPage = () => {
            <button onClick={() => navigate("/signup")}>Sign Up</button>
 
            {/* 소셜 로그인 버튼 영역 */}
-           <div>
+           {/* <div> */}
                {/* 각 소셜 로그인 제공자별 버튼 */}
-               <SocialLoginButton provider="google" />
-               <SocialLoginButton provider="kakao" />
-           </div>
+               {/* <SocialLoginButton provider="google" /> */}
+               {/* <SocialLoginButton provider="kakao" /> */}
+           {/* </div> */}
        </div>
    );
 };
