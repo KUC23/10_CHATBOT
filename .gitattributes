@@ -1,0 +1,16 @@
+# .gitattributes 파일에 추가
+* text=auto
+
+# 모든 JSON 파일을 LF로 처리
+*.json text eol=lf
+
+# 모든 MD 파일을 LF로 처리
+*.md text eol=lf
+
+# 모든 Python 파일을 LF로 처리
+*.py text eol=lf
+
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
