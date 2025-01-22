@@ -3,7 +3,6 @@ from django.urls.conf import include
 from . import views
 from allauth.socialaccount.providers.kakao.views import OAuth2CallbackView
 
-# appname을 추가하면 소셜회원가입 시 오류가 생김
 
 urlpatterns = [
     path('', include("allauth.urls")),

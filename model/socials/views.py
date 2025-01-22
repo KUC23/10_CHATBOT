@@ -16,7 +16,6 @@ def find_existing_user(email=None, phone_number=None):
     return None
 
 
-# 소셜계정으로 회원가입 할 때, 중복된 이메일과 핸드폰번호 확인
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email', '').strip()
@@ -58,7 +57,6 @@ class CheckUserView(APIView):
             "redirect_url": "/preferences/"
         })
 
-# 소셜계정으로 회원가입 할 때, 중복된 이메일/핸드폰이면 기존계정과 연동 또는 새로운 계정 생성
 class SocialLinkOrCreateView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = SocialAccountSerializer(data=request.data)
@@ -128,7 +126,6 @@ class SocialLinkOrCreateView(APIView):
         }, status=400)
 
 
-# 로그인한 사용자가 새로운 소셜계정을 연동하고 싶을 때
 class LinkSocialAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -137,7 +134,6 @@ class LinkSocialAccountView(APIView):
         social_id = request.data.get('social_id')
         user = request.user
 
-        # 이미 연동된 소셜 계정인지 확인
         existing_account = CustomSocialAccount.objects.filter(provider=provider, uid=social_id, user=user).exists()
         if existing_account:
             return Response({
@@ -153,7 +149,6 @@ class LinkSocialAccountView(APIView):
                 "redirect_url": f"/profile/{user.username}/"
             })
 
-        # 새 소셜 계정을 연동
         CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
         if provider not in user.connected_social_providers:
             user.connected_social_providers.append(provider)
@@ -168,7 +163,6 @@ class LinkSocialAccountView(APIView):
         })
 
 
-# 소셜계정 연동여부 확인 /안쓰는 뷰이면 삭제 가능
 class GetLinkedSocialAccountsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,7 +173,6 @@ class GetLinkedSocialAccountsView(APIView):
             "connected_social_providers": user.connected_social_providers,
         })
 
-# 소셜계정이 두 개 이상일 때, 정보를 받을 기본 소셜계정 선택
 class SetDefaultSocialProviderView(APIView):
     permission_classes = [IsAuthenticated]
 

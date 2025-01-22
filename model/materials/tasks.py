@@ -23,8 +23,6 @@ from chatbots.chatbot import learnChat
 
 redis_client = redis.StrictRedis(**settings.REDIS_SETTINGS)
 
-
-# postgresql 설정
 def get_postgres_connection():
     db_config = settings.DATABASES['default']
     return psycopg2.connect(
@@ -35,7 +33,6 @@ def get_postgres_connection():
         port=db_config['PORT']
     )
 
-# nyt api에서 받아와 db에 저장
 @shared_task
 def fetch_and_store_nyt_news(news_source="NYTimes"):
     API_KEY = settings.NYT_API_KEY
@@ -70,12 +67,10 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
                     title = article.get('title', 'No Title')
                     abstract = article.get('abstract', 'No Abstract')
 
-                    # 요약 및 단어 추출
                     chat = learnChat(abstract)
                     summary_korean = chat.translate(abstract)
                     vocab = chat.vocab()
 
-                    # Redis 저장
                     redis_key = f"news:{category.name.lower()}:{news_url}"
                     redis_value = json.dumps({
                         'title': title,
@@ -88,7 +83,6 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
                     })
                     redis_client.set(redis_key, redis_value, ex=86400)
 
-                    # PostgreSQL 저장
                     News.objects.update_or_create(
                         url=news_url,
                         defaults={
@@ -115,16 +109,7 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
 
 
 
-#cnn크롤링
 def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
-    # 도커 실행 시 options부터 dirver까지 주석처리
-    # options = webdriver.ChromeOptions()
-    # options.headless = True
-    # options.add_argument("--disable-gpu")
-    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    
-    # #로컬 실행 시 이하 반드시 주석처리(도커에서 크롤링 시 필요한 설정)
     options = webdriver.ChromeOptions()
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -152,15 +137,13 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
                 articles = []
 
                 for article in soup.find_all('span', class_='container__headline-text')[:5]:
-                    title = article.get_text().strip()  # 기사 제목
-                    link_element = article.find_parent("a")  # 상위 <a> 태그 찾기
+                    title = article.get_text().strip()  
+                    link_element = article.find_parent("a")  
                     link = link_element['href'] if link_element and "href" in link_element.attrs else None
 
-                    # 상대 URL 처리
                     if link and not link.startswith("http"):
                         link = f"https://edition.cnn.com{link}"
 
-                        # 기사 본문 추출
                         content = extract_article_content(driver, link)
 
                         articles.append({"title": title, "url": link, "content": content})
@@ -183,7 +166,6 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
         driver.quit()
 
 
-#cnn 기사 전문추출
 def extract_article_content(driver, article_url, max_retries=1, retry_delay=5):
     retries = 0
     while retries < max_retries:
@@ -232,7 +214,6 @@ def fetch_and_store_cnn_news():
                 summary_korean = chat.translate(summary_english)
                 vocab = chat.vocab()
 
-                # Redis 저장
                 redis_key = f"news:{category.name.lower()}:{article['url']}"
                 redis_value = json.dumps({
                     'title': article['title'],
@@ -245,7 +226,6 @@ def fetch_and_store_cnn_news():
                 })
                 redis_client.set(redis_key, redis_value, ex=86400)
 
-                # PostgreSQL 저장
                 News.objects.update_or_create(
                     url=article['url'],
                     defaults={
@@ -272,7 +252,6 @@ def setup_periodic_tasks():
     except IntervalSchedule.DoesNotExist:
         schedule = IntervalSchedule.objects.create(every=1, period=IntervalSchedule.DAYS)
 
-    # NYTimes 작업
     PeriodicTask.objects.update_or_create(
         name='Fetch and Store NYT News Daily',
         defaults={
@@ -284,7 +263,6 @@ def setup_periodic_tasks():
         },
     )
 
-    # CNN 작업
     PeriodicTask.objects.update_or_create(
         name='Fetch and Store CNN News Daily',
         defaults={

@@ -71,7 +71,6 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 def update(self, instance, validated_data):
     if 'categories' in validated_data:
         categories = validated_data.pop('categories')
-        # 유효성 검사: 카테고리 ID
         if not all(category in Category.objects.values_list('id', flat=True) for category in [cat.id for cat in categories]):
             raise serializers.ValidationError("유효하지 않은 카테고리가 포함되어 있습니다.")
         instance.categories.set(categories)

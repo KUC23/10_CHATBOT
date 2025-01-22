@@ -11,6 +11,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.autodiscover_tasks()
 
-# @app.task(bind=True) 디버깅 코드, 필요없어지면 지울것
-# def debug_task(self):
-#     print(f'Request: {self.request!r}')

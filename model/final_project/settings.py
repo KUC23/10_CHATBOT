@@ -105,15 +105,13 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        'HOST': config("POSTGRES_HOST"), ##로컬실행 시 반드시 주석처리
-        # 'HOST': "localhost", # 도커실행 시 반드시 주석처리
+        'HOST': config("POSTGRES_HOST"), 
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
 
 REDIS_SETTINGS = {
-    # 'host': '127.0.0.1',  # 도커실행 시 반드시 주석처리
-    'host': 'redis',  ##로컬실행 시 반드시 주석처리
+    'host': 'redis', 
     'port': 6379,
     'db': 1,
     'decode_responses': True
@@ -260,3 +258,5 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "static"
