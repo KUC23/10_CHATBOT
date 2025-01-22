@@ -1,0 +1,71 @@
+services:
+  web:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  
+    env_file:
+      - .env  
+    depends_on:
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: "final_project.settings"  
+    command: python manage.py runserver 0.0.0.0:8000
+  
+  db:
+    image: postgres:16  
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}  
+      POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}  
+      POSTGRES_DB: final_project  
+    ports:
+      - "5432:5432"  
+    volumes:
+      - pg_data:/var/lib/postgresql/data  
+      - ./final_project.sql:/docker-entrypoint-initdb.d/final_project.sql
+
+  redis:
+    image: redis:6.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"  
+    volumes:
+      - redis_data:/data 
+
+  worker:  
+    build:
+      context: .
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: "final_project.settings"
+    command: celery -A final_project worker --loglevel=info
+
+  beat: 
+    build:
+      context: .
+    depends_on:
+      - redis
+      - db
+      - worker
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: "final_project.settings"
+    command: celery -A final_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
+
+volumes:
+  pg_data:
+  redis_data:  

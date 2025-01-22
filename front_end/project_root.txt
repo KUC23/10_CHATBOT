@@ -1,0 +1,39 @@
+project_root/
+├── accounts/
+│   ├── views.py          # 로그인 및 회원가입 로직 처리
+│   ├── urls.py           # /api/v1/accounts/ URL 경로 설정
+│   ├── serializers.py    # 요청 데이터를 처리하는 시리얼라이저
+│   ├── models.py         # 사용자 모델 정의
+│   ├── tests.py          # 테스트 코드
+│   └── __init__.py
+├──chatbots/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── chatbot.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── final_project/
+│   ├── settings.py       # Django 프로젝트 설정
+│   ├── urls.py           # /api/v1/로 요청 라우팅
+│   ├── wsgi.py
+│   └── __init__.py
+│
+├──frontend/
+│	├── src/
+│       ├── components/                 # React 컴포넌트들
+│       │   ├── LoginPage.js            # 로그인 페이지 컴포넌트
+│       │   ├── SignupPage.js           # 회원가입 페이지 컴포넌트
+│       │   ├── UserInfoPage.js         # 사용자 정보 페이지 컴포넌트
+│       │   ├── EditUserInfoPage.js     # 사용자 정보 수정 페이지 컴포넌트
+│       │   ├── SocialLoginButton.js    # 소셜 로그인 버튼 컴포넌트
+│       ├── api/                        # API 호출 관련 함수들
+│       │   ├── accounts.js             # 사용자 관련 API 요청
+│       │   └── socials.js              # 소셜 로그인 관련 API 요청
+│       ├── App.js                      # 전체 페이지 라우팅 관리
+│       ├── index.js                    # 프로젝트 엔트리 포인트
+│       ├── styles/                     # CSS 관리
+│ 
+├── manage.py             # Django 관리 명령어 실행 파일

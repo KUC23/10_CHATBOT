@@ -1,0 +1,89 @@
+[
+{
+    "model": "accounts.category",
+    "pk": 1,
+    "fields": {
+        "name": "Main",
+        "source_categories": {
+            "CNN": "world",
+            "NYTimes": "world"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 2,
+    "fields": {
+        "name": "Technology",
+        "source_categories": {
+            "NYTimes": "technology"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 3,
+    "fields": {
+        "name": "Business",
+        "source_categories": {
+            "CNN": "business",
+            "NYTimes": "business"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 4,
+    "fields": {
+        "name": "Science",
+        "source_categories": {
+            "CNN": "science",
+            "NYTimes": "science"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 5,
+    "fields": {
+        "name": "Health",
+        "source_categories": {
+            "CNN": "health",
+            "NYTimes": "health"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 6,
+    "fields": {
+        "name": "Politics",
+        "source_categories": {
+            "CNN": "politics",
+            "NYTimes": "politics"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 7,
+    "fields": {
+        "name": "Art",
+        "source_categories": {
+            "CNN": "entertainment",
+            "NYTimes": "arts"
+        }
+    }
+},
+{
+    "model": "accounts.category",
+    "pk": 8,
+    "fields": {
+        "name": "Sport",
+        "source_categories": {
+            "CNN": "sport",
+            "NYTimes": "sports"
+        }
+    }
+}
+]
