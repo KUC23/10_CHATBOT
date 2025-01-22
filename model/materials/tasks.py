@@ -262,37 +262,6 @@ def fetch_and_store_cnn_news():
             print(f"No articles found for category: {category.name}")
 
 
-# # csv파일로 저장
-# def save_redis_to_csv(file_name="news_data.csv"):
-#     keys = redis_client.keys('news:*')
-#     if not keys:
-#         print("No data in Redis to save.")
-#         return
-
-#     with open(file_name, mode='w', newline='', encoding='utf-8') as csv_file:
-#         fieldnames = ['Title', 'Abstract', 'URL', 'Published Date', 'Category']
-#         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-#         writer.writeheader()
-
-#         for key in keys:
-#             news_data = json.loads(redis_client.get(key))
-#             writer.writerow({
-#                 'Title': news_data.get('title', ''),
-#                 'Abstract': news_data.get('abstract', ''),
-#                 'URL': news_data.get('url', ''),
-#                 'Published Date': news_data.get('published_date', ''),
-#                 'Category': news_data.get('category', '')
-#             })
-
-#     print(f"Data successfully saved to {file_name}.")
-
-# # celery task: redis 데이터 csv로 저장
-# @shared_task
-# def save_news_to_csv_task(file_name="news_data.csv"):
-#     save_redis_to_csv(file_name=file_name)
-
-
 def setup_periodic_tasks():
     try:
         schedule = IntervalSchedule.objects.get(every=1, period=IntervalSchedule.DAYS)
