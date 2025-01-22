@@ -120,8 +120,8 @@ DATABASES = {
 }
 
 REDIS_SETTINGS = {
-    'host': '127.0.0.1',  # 도커실행 시 반드시 주석처리
-    # 'host': 'redis',  ##로컬실행 시 반드시 주석처리
+    #'host': '127.0.0.1',  # 도커실행 시 반드시 주석처리
+    'host': 'redis',  ##로컬실행 시 반드시 주석처리
     'port': 6379,
     'db': 1,
     'decode_responses': True
