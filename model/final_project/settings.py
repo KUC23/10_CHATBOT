@@ -32,10 +32,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    '.ngrok-free.app',  # 테스트용 모든 ngrok 도메인 허용
-    'https://82dc-211-198-58-168.ngrok-free.app'  # 현재 사용 중인 특정 ngrok 도메인
+    # 로컬 ngrok용 주소
+    #'127.0.0.1',
+    #'localhost',
+    #'.ngrok-free.app',  # 테스트용 모든 ngrok 도메인 허용
+    #'https://82dc-211-198-58-168.ngrok-free.app',  # 현재 사용 중인 특정 ngrok 도메인
+ 
+    '15.164.255.1'  # 퍼블릭 ip
 ]
 
 
