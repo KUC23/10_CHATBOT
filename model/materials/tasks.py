@@ -152,14 +152,15 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
                 articles = []
 
                 for article in soup.find_all('span', class_='container__headline-text')[:5]:
-                    title = article.get_text().strip()
-                    link_element = article.find_parent("a")
-                    if link_element and "href" in link_element.attrs:
-                        link = link_element['href']
-                        if not link.startswith("http"):
-                            link = f"https://edition.cnn.com{link}"
+                    title = article.get_text().strip()  # 기사 제목
+                    link_element = article.find_parent("a")  # 상위 <a> 태그 찾기
+                    link = link_element['href'] if link_element and "href" in link_element.attrs else None
 
-                        # 기사 전문 추출
+                    # 상대 URL 처리
+                    if link and not link.startswith("http"):
+                        link = f"https://edition.cnn.com{link}"
+
+                        # 기사 본문 추출
                         content = extract_article_content(driver, link)
 
                         articles.append({"title": title, "url": link, "content": content})
@@ -222,6 +223,10 @@ def fetch_and_store_cnn_news():
 
         if articles:
             for article in articles[:5]:  
+                if not article['content'] or article['content'].strip() == "" or article['content'] == "No content available.":
+                    print(f"article with invalid content: {article['url']}")
+                    continue
+
                 chat = learnChat(article['content'])
                 summary_english = chat.summarize()
                 summary_korean = chat.translate(summary_english)

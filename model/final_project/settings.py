@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'socials',
     'materials',
     'chatbots',
+    'platformbots',
 ]
 
 MIDDLEWARE = [

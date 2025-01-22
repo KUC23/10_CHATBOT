@@ -378,5 +378,6 @@ $RECYCLE.BIN/
 
 local_dump.sql
 
+database_backup.dump
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,visualstudiocode,pycharm,macos,windows
