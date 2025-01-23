@@ -2,58 +2,76 @@ services:
   web:
     build:
       context: .
+    container_name: model-web
+    networks:
+      - model_default
+      - bridge
     ports:
       - "8000:8000"
     volumes:
-      - .:/app  
-    env_file:
-      - .env  
+      - .:/app
     depends_on:
       - db
     environment:
-      DJANGO_SETTINGS_MODULE: "final_project.settings"  
-    command: python manage.py runserver 0.0.0.0:8000
-  
+      DJANGO_SETTINGS_MODULE: "final_project.settings"
+    command: gunicorn --bind 0.0.0.0:8000 --workers 3 final_project.wsgi:application
+
   db:
-    image: postgres:16  
+    image: postgres:16
     container_name: postgres_db
     restart: always
+    networks:
+      - model_default
     environment:
-      POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}  
-      POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}  
-      POSTGRES_DB: final_project  
+      POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}
+      POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}
+      POSTGRES_DB: final_project
     ports:
-      - "5432:5432"  
+      - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data  
+      - pg_data:/var/lib/postgresql/data
       - ./final_project.sql:/docker-entrypoint-initdb.d/final_project.sql
 
   redis:
     image: redis:6.2
     container_name: redis
     restart: always
+    networks:
+      - model_default
     ports:
-      - "6379:6379"  
+      - "6379:6379"
     volumes:
-      - redis_data:/data 
+      - redis_data:/data
 
-  worker:  
+  worker:
     build:
       context: .
+    container_name: celery_worker
+    networks:
+      - model_default
+      - bridge
     depends_on:
       - redis
       - db
+    shm_size: '2gb'
     volumes:
       - .:/app
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: "final_project.settings"
+      - DJANGO_SETTINGS_MODULE=final_project.settings
+      - LANG=C.UTF-8
+      - DISPLAY=:99.0
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
     command: celery -A final_project worker --loglevel=info
 
-  beat: 
+  beat:
     build:
       context: .
+    container_name: celery_beat
+    networks:
+      - model_default
+      - bridge
     depends_on:
       - redis
       - db
@@ -66,6 +84,13 @@ services:
       DJANGO_SETTINGS_MODULE: "final_project.settings"
     command: celery -A final_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
 
+
 volumes:
   pg_data:
-  redis_data:  
+  redis_data:
+
+networks:
+  model_default:
+    driver: bridge
+  bridge:
+    driver: bridge
