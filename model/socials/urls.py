@@ -1,7 +1,6 @@
 from django.urls import path
 from django.urls.conf import include
 from . import views
-from allauth.socialaccount.providers.kakao.views import OAuth2CallbackView
 
 
 urlpatterns = [

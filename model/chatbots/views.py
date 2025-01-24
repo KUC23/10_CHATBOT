@@ -26,36 +26,66 @@ class SendArticlesToChatbotView(APIView):
                 redis_key_pattern = f"news:{category.name.lower()}:*"
 
                 redis_articles = redis_client.keys(redis_key_pattern)
+                redis_articles_data = []
+
                 if redis_articles:
                     redis_articles_data = [
                         json.loads(redis_client.get(article_key))
                         for article_key in redis_articles
                     ]
+                else:
+                    db_articles = News.objects.filter(category=category).order_by('-created_at')
+                    for article in db_articles:
+                        redis_key = f"news:{category.name.lower()}:{article.id}"
+                        redis_client.set(
+                            redis_key,
+                            json.dumps({
+                                "title": article.title,
+                                "abstract": article.abstract,
+                                "summary_english": article.summary_english,
+                                "summary_korean": article.summary_korean,
+                                "vocab": article.vocab,
+                                "url": article.url,
+                                "category": category.name,
+                                "created_at": article.created_at.isoformat(),
+                            })
+                        )
+                        redis_client.expire(redis_key, 24 * 60 * 60)  
+                        redis_articles_data.append({
+                            "title": article.title,
+                            "abstract": article.abstract,
+                            "summary_english": article.summary_english,
+                            "summary_korean": article.summary_korean,
+                            "vocab": article.vocab,
+                            "url": article.url,
+                            "category": category.name,
+                            "created_at": article.created_at.isoformat(),
+                        })
 
-                    viewed_articles = redis_client.smembers(viewed_articles_key)
-                    redis_articles_data = [
-                        article for article in redis_articles_data
-                        if article['url'] not in viewed_articles
-                    ]
+                viewed_articles = redis_client.smembers(viewed_articles_key)
+                redis_articles_data = [
+                    article for article in redis_articles_data
+                    if article['url'] not in viewed_articles
+                ]
 
-                    redis_articles_data.sort(key=lambda article: article.get('created_at', ''), reverse=True)
+                redis_articles_data.sort(key=lambda article: article.get('created_at', ''), reverse=True)
 
-                    if redis_articles_data:
-                        article = redis_articles_data[0]
-                        redis_client.sadd(viewed_articles_key, article['url'])
-                        redis_client.expire(viewed_articles_key, 7 * 24 * 60 * 60)
+                if redis_articles_data:
+                    article = redis_articles_data[0]
+                    redis_client.sadd(viewed_articles_key, article['url'])
+                    redis_client.expire(viewed_articles_key, 7 * 24 * 60 * 60)  
 
-                        category_news[category.name] = {
-                            "title": article['title'],
-                            "abstract": article['abstract'],
-                            "summary": {
-                                "english": article['summary_english'],
-                                "korean": article['summary_korean'],
-                            },
-                            "vocab": article['vocab'],
-                            "url": article['url'],
-                            "category": article['category'],
-                        }
+                    category_news[category.name] = {
+                        "title": article['title'],
+                        "abstract": article['abstract'],
+                        "summary": {
+                            "english": article['summary_english'],
+                            "korean": article['summary_korean'],
+                        },
+                        "vocab": article['vocab'],
+                        "url": article['url'],
+                        "category": article['category'],
+                    }
 
             if not category_news:
                 return Response({"error": "No new articles available for any category."}, status=status.HTTP_404_NOT_FOUND)

@@ -3,7 +3,6 @@ import psycopg2
 import requests
 import time
 import json
-import csv
 from datetime import datetime
 from celery import shared_task
 from accounts.models import Category
