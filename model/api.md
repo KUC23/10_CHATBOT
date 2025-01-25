@@ -674,6 +674,13 @@ endpoints: api/v1/chatbots/news/
 {"error": "No categories set for this user"}
 ```
 
+- response(실패, 404 Not found) 관심사 카테고리의 기사가 DB에 없거나 있는 기사를 모두 조회하여 새로운 기사가 없음
+```json
+{
+    "error": "No new articles available for any category."
+}
+```
+
 
 17. 연결된 소셜계정 삭제(DELETE)
 endpoints: api/v1/socials/delete-social-account/
@@ -713,7 +720,7 @@ endpoints: api/v1/socials/delete-social-account/
 }
 ```
 
-18. 소셜 access token 가져오기(GETT)
+18. 소셜 access token 가져오기(GET)
 **포스트맨에서 확인 불가** -> **예상되는 API구조임**
 endpoint: api/v1/socials/access-token/
 

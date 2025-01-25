@@ -62,9 +62,13 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
                 print(f"Fetching articles for category: {category.name} ({source_category})")
 
                 for article in articles[:5]:
-                    news_url = article.get('url', 'No URL')
-                    title = article.get('title', 'No Title')
-                    abstract = article.get('abstract', 'No Abstract')
+                    news_url = article.get('url', '').strip()
+                    title = article.get('title', 'No Title').strip()
+                    abstract = article.get('abstract', '').strip()
+
+                    if not abstract or news_url == 'null':
+                        print(f"Article with invalid data. URL: {news_url}, Abstract: {abstract}")
+                        continue
 
                     chat = learnChat(abstract)
                     summary_korean = chat.translate(abstract)
