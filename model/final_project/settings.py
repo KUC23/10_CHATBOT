@@ -120,7 +120,7 @@ REDIS_SETTINGS = {
 GEMINI_API_KEY = config("Gemini_API_Key")
 NYT_API_KEY = config("NYT_API_KEY")
 
-# Redis의 호스트, 포트, DB 값 참조
+
 REDIS_HOST = REDIS_SETTINGS['host']
 REDIS_PORT = REDIS_SETTINGS['port']
 REDIS_DB = REDIS_SETTINGS['db']
@@ -255,7 +255,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id': config("DISCORD_CLIENT_ID"),
             'secret': config("DISCORD_CLIENT_SECRET"),
         },
-        'SCOPE': ['identify',]
+        'SCOPE': ['identify', 'email']
     }
 }
 

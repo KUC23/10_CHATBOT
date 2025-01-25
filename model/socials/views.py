@@ -7,6 +7,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from .serialilzers import SocialAccountSerializer
 from django.db import IntegrityError
+from .utils import get_access_token, refresh_access_token
 
 def find_existing_user(email=None, phone_number=None):
     if email:
@@ -232,3 +233,33 @@ class DeleteSocialAccountView(APIView):
             "status": "success",
             "message": f"{provider} 계정이 성공적으로 삭제되었습니다."
         }, status=200)
+
+class SocialAccessTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        provider = request.query_params.get("provider") 
+        if not provider:
+            return Response({"error": "provider를 지정해주세요 (예: kakao, discord)"}, status=400)
+
+        user = request.user
+
+        access_token = get_access_token(user, provider)
+
+        if not access_token:
+            return Response({"error": f"{provider} 계정의 Access Token이 없습니다."}, status=404)
+
+        return Response({"access_token": access_token})
+
+    def post(self, request, *args, **kwargs):
+        provider = request.data.get("provider")  
+        if not provider:
+            return Response({"error": "provider를 지정해주세요 (예: kakao, discord)"}, status=400)
+
+        user = request.user
+
+        try:
+            new_access_token = refresh_access_token(user, provider)
+            return Response({"access_token": new_access_token})
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)

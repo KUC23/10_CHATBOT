@@ -713,3 +713,63 @@ endpoints: api/v1/socials/delete-social-account/
 }
 ```
 
+18. 소셜 access token 가져오기(GETT)
+**포스트맨에서 확인 불가** -> **예상되는 API구조임**
+endpoint: api/v1/socials/access-token/
+
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+```json
+{
+    "provider": "discord" # or "kakao"
+}
+
+```
+- response(성공, 200 Ok)
+```json
+{
+    "access_token": "DISCORD_ACCESS_TOKEN",
+}
+
+```
+- response(실패, 404 Not found)
+```json
+{
+    "error": "No social token found for the given provider."
+}
+```
+
+19. 소셜 access token 갱신 (POST)
+**포스트맨에서 확인 불가** -> **예상되는 API구조임**
+endpoint: api/v1/socials/access-token/
+- headers
+```json
+{
+    "Authorization": "Bearer <token>"
+}
+```
+- request body
+```json
+{
+    "provider": "discord" # or "kakao"
+}
+
+```
+- response(성공, 200 Ok)
+```json
+{
+    "access_token": "NEW_DISCORD_ACCESS_TOKEN",
+}
+
+```
+- response(실패, 404 Not found)
+```json
+{
+    "error": "Token is invalid or expired."
+}
+```
