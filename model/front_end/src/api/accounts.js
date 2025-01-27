@@ -3,10 +3,8 @@
 
 import axios from "axios";
 
-// Axios 기본 URL 설정
-// 서버가 로컬에서 실행 중이라면 기본적으로 http://localhost:8000 (Django 서버의 기본 포트)를 요청해주어야한다.
 const apiClient = axios.create({
-    baseURL: "http://localhost:8000", // Django 서버 기본 URL
+    baseURL: "http://15.164.255.1:8000", // Django 서버 기본 URL
     headers: {
         'Content-Type': 'application/json',
     }
@@ -253,3 +251,40 @@ export const changePassword = async (passwordData) => {
         throw error;
     }
 };
+
+// 소셜 로그인 함수 추가:
+export const getSocialLoginUrl = async (provider) => {
+    try {
+        const response = await apiClient.post('/api/v1/socials/social-link-or-create/', {
+            provider: provider,
+            // 필요한 데이터 추가
+        });
+        return response.data.auth_url;
+    } catch (error) {
+        console.error("소셜 로그인 URL 획득 실패:", error);
+        throw error;
+    }
+};
+
+
+
+export const sendChatbotInvite = async (username) => {
+    try {
+        const response = await apiClient.post('/api/v1/socials/send-invite/', {
+            username: username
+        });
+        return response.data;
+    } catch (error) {
+        console.error("챗봇 초대 전송 실패:", error);
+        throw error;
+    }
+};
+
+
+
+
+
+
+
+
+

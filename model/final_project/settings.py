@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 from decouple import config
 from celery import Celery
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,9 +72,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 맨 앞으로
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -84,10 +86,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'final_project.urls'
 
+
+import os  # os 모듈 추가 필요
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'front_end', 'build')], # React 빌드 경로 추가],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,6 +105,12 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
+
+
+
 
 WSGI_APPLICATION = 'final_project.wsgi.application'
 
@@ -113,8 +125,8 @@ DATABASES = {
         'NAME': config("POSTGRES_DB"),
         'USER': config("YOUR_POSTGRESQL_USERNAME"),
         'PASSWORD': config("YOUR_POSTGRESQL_PASSWORD"),
-        # 'HOST': config("POSTGRES_HOST"), ##로컬실행 시 반드시 주석처리
-        'HOST': "localhost", # 도커실행 시 반드시 주석처리
+        'HOST': config("POSTGRES_HOST"), ##도커로 실행시성화, 로컬실행 시 반드시 주석처리
+        #'HOST': '127.0.0.1',  # ec2서버에서 실행할때는 'db' 대신 localhost 사용
         'PORT': config("POSTGRES_PORT", default="5432"),
     }
 }
@@ -156,11 +168,17 @@ CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_TIME_LIMIT = 4000
 CELERY_TIMEZONE = 'Asia/Seoul'
+#CELERYD_MAX_MEMORY_PER_CHILD = 200000  # 메모리 누수 방지
+#CELERY_WORKER_CONCURRENCY = 1 # 메모리 누수 방지
 CELERY_BEAT_SCHEDULE = {
-    'fetch-news-every-day': {
-        'task': 'tasks.fetch_and_store_news',
-        'schedule': timedelta(days=1),  
-    },
+   'fetch-nyt-news-daily': {
+       'task': 'materials.tasks.fetch_and_store_nyt_news',
+       'schedule': crontab(hour=6, minute=0),
+   },
+   'fetch-cnn-news-daily': {
+       'task': 'materials.tasks.fetch_and_store_cnn_news', 
+       'schedule': crontab(hour=6, minute=30),
+   }
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -188,8 +206,12 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'accounts.User'
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React 개발 서버
+  "http://15.164.255.1",  # 추가
+	"http://15.164.255.1:8000",
 ]
 
 SPECTACULAR_SETTINGS = {
@@ -232,8 +254,31 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # 변경
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'front_end', 'build', 'static'),  # 변경
+    os.path.join(BASE_DIR, 'front_end', 'public'),  # public 폴더 추가
+]
+
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+
+
+# 추가
+STATIC_SERVE = True
+
+# static 파일 설정
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+
+
 
 
 # Default primary key field type

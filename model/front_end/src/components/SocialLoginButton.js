@@ -3,16 +3,51 @@
 
 // src/components/SocialLoginButton.js
 
-import React from "react";
 
-// 소셜 로그인 버튼 컴포넌트
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { getSocialLoginUrl } from "../api/accounts";
+
 const SocialLoginButton = ({ provider }) => {
-    const handleSocialLogin = () => {
-        // 소셜 로그인 처리 URL로 리다이렉트
-        window.location.href = `/api/v1/socials/link-social-account/?provider=${provider}`;
+    const navigate = useNavigate();
+
+    const handleSocialLogin = async () => {
+        const isLoggedIn = localStorage.getItem('access');
+        if (!isLoggedIn) {
+            alert('로그인이 필요합니다');
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const authUrl = await getSocialLoginUrl(provider);
+            if (authUrl) window.location.href = authUrl;
+        } catch (error) {
+            console.error("소셜 로그인 실패:", error);
+            alert("소셜 로그인 연동에 실패했습니다.");
+        }
     };
 
-    return <button onClick={handleSocialLogin}>{provider} Login</button>;  // 버튼 클릭 시 소셜 로그인 호출
+    return <button onClick={handleSocialLogin}>{provider} Login</button>;
 };
 
 export default SocialLoginButton;
+
+
+
+
+
+const SocialLinkButton = ({ provider }) => {
+    const handleLink = async () => {
+        try {
+            const authUrl = await getSocialLoginUrl(provider);
+            window.location.href = authUrl;
+        } catch (error) {
+            alert("소셜 계정 연동 실패");
+        }
+    };
+
+    return <button onClick={handleLink}>Connect with {provider}</button>;
+};
+
+export { SocialLoginButton, SocialLinkButton };

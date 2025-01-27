@@ -65,9 +65,11 @@ class KakaoWebhookView(APIView):
             req = request.data
             # userRequest.utterance: 사용자가 입력한 메시지
             utterance = req.get('userRequest', {}).get('utterance', '')
-            
+
+
             # 카테고리 입력 시 해당 뉴스 제공
             article = KakaoMessageService.get_latest_news(utterance)
+            
             if article:
                 # 뉴스 데이터를 카카오톡 메시지 형식으로 변환
                 message = KakaoMessageService.format_news_message(article)
@@ -76,6 +78,19 @@ class KakaoWebhookView(APIView):
                         "text": message
                     }
                 })
+                
+            # 헤드라인 뉴스 5개 출력
+            elif utterance == "뉴스":
+                headlines = KakaoMessageService.get_headlines()
+                if headlines:
+                    response['template']['outputs'].append({
+                        "simpleText": {
+                            "text": headlines
+                        }
+                    })
+                    return Response(response)
+                
+                
 
             else:
                 # 해당 카테고리 뉴스가 없는 경우
@@ -95,3 +110,6 @@ class KakaoWebhookView(APIView):
             })
 
         return Response(response)
+    
+
+    

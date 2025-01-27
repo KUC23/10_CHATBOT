@@ -76,7 +76,7 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
                     vocab = chat.vocab()
 
                     # Redis 저장
-                    redis_key = f"news:{category.name.lower()}:{news_url}"
+                    redis_key = f"news:{category.name.lower()}:{int(time.time())}:{news_url}"
                     redis_value = json.dumps({
                         'title': title,
                         'abstract': abstract,
@@ -117,26 +117,34 @@ def fetch_and_store_nyt_news(news_source="NYTimes"):
 
 #cnn크롤링
 def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
-    # options = webdriver.ChromeOptions()
-    # options.headless = True
-    # options.add_argument("--disable-gpu")
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") #도커실행 시 필수
-    # 로컬 실행 시 이하 반드시 주석처리(도커에서 크롤링 시 필요한 설정)
+    # 도커 실행 시 options부터 dirver까지 주석처리
     options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
     options.add_argument("--disable-gpu")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-software-rasterizer")
-    options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/google-chrome" 
-    options.add_argument("--no-sandbox") 
-    options.add_argument("--disable-dev-shm-usage") 
-    options.add_argument("--headless")  
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
+    #로컬 실행 시 이하 반드시 주석처리(도커에서 크롤링 시 필요한 설정)
+    # options = webdriver.ChromeOptions()
+    # options.add_argument("--disable-gpu")
+    # options.add_argument("--no-sandbox")
+    # options.add_argument("--disable-dev-shm-usage")
+    # options.add_argument("--headless")
+    # options.add_argument("--window-size=1920,1080")
+    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    
+    
+    # Windows 환경용 설정
     driver = webdriver.Chrome(
-    service=Service("/usr/local/bin/chromedriver"),
-    options=options
-    ) #여기까지 주석처리
-
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+    '''
+    driver = webdriver.Chrome(
+        service=Service("/usr/local/bin/chromedriver"), 
+        options=options
+    )
+    '''
 
     try:
         retries = 0
@@ -152,14 +160,15 @@ def scrape_cnn_news_with_selenium(category_url, max_retries=1, retry_delay=5):
                 articles = []
 
                 for article in soup.find_all('span', class_='container__headline-text')[:5]:
-                    title = article.get_text().strip()
-                    link_element = article.find_parent("a")
-                    if link_element and "href" in link_element.attrs:
-                        link = link_element['href']
-                        if not link.startswith("http"):
-                            link = f"https://edition.cnn.com{link}"
+                    title = article.get_text().strip()  # 기사 제목
+                    link_element = article.find_parent("a")  # 상위 <a> 태그 찾기
+                    link = link_element['href'] if link_element and "href" in link_element.attrs else None
 
-                        # 기사 전문 추출
+                    # 상대 URL 처리
+                    if link and not link.startswith("http"):
+                        link = f"https://edition.cnn.com{link}"
+
+                        # 기사 본문 추출
                         content = extract_article_content(driver, link)
 
                         articles.append({"title": title, "url": link, "content": content})
@@ -222,13 +231,17 @@ def fetch_and_store_cnn_news():
 
         if articles:
             for article in articles[:5]:  
+                if not article['content'] or article['content'].strip() == "" or article['content'] == "No content available.":
+                    print(f"article with invalid content: {article['url']}")
+                    continue
+
                 chat = learnChat(article['content'])
                 summary_english = chat.summarize()
                 summary_korean = chat.translate(summary_english)
                 vocab = chat.vocab()
 
                 # Redis 저장
-                redis_key = f"news:{category.name.lower()}:{article['url']}"
+                redis_key = f"news:{category.name.lower()}:{int(time.time())}:{article['url']}"
                 redis_value = json.dumps({
                     'title': article['title'],
                     'abstract': article['content'],
@@ -255,37 +268,6 @@ def fetch_and_store_cnn_news():
             print(f"Saved {len(articles)} articles for category: {category.name}")
         else:
             print(f"No articles found for category: {category.name}")
-
-
-# # csv파일로 저장
-# def save_redis_to_csv(file_name="news_data.csv"):
-#     keys = redis_client.keys('news:*')
-#     if not keys:
-#         print("No data in Redis to save.")
-#         return
-
-#     with open(file_name, mode='w', newline='', encoding='utf-8') as csv_file:
-#         fieldnames = ['Title', 'Abstract', 'URL', 'Published Date', 'Category']
-#         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-#         writer.writeheader()
-
-#         for key in keys:
-#             news_data = json.loads(redis_client.get(key))
-#             writer.writerow({
-#                 'Title': news_data.get('title', ''),
-#                 'Abstract': news_data.get('abstract', ''),
-#                 'URL': news_data.get('url', ''),
-#                 'Published Date': news_data.get('published_date', ''),
-#                 'Category': news_data.get('category', '')
-#             })
-
-#     print(f"Data successfully saved to {file_name}.")
-
-# # celery task: redis 데이터 csv로 저장
-# @shared_task
-# def save_news_to_csv_task(file_name="news_data.csv"):
-#     save_redis_to_csv(file_name=file_name)
 
 
 def setup_periodic_tasks():

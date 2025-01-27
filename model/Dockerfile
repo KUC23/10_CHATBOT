@@ -42,7 +42,8 @@ RUN wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriv
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install gunicorn
+    && pip install gunicorn whitenoise
+
 
 COPY . /app/
 
@@ -51,3 +52,10 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "final_project.wsgi:application"]
+
+# 기존 CMD 직전에 다음 코드 추가
+RUN addgroup --system celery && \
+    adduser --system --ingroup celery celery \
+    && chown -R celery:celery /app
+
+USER celery

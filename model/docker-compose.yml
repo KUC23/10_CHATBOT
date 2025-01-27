@@ -1,5 +1,7 @@
 services:
   web:
+    env_file:
+      - .env  # 이 줄 추가
     build:
       context: .
     container_name: model-web
@@ -9,12 +11,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./:/app
+      - ./front_end/build:/app/front_end/build
     depends_on:
       - db
     environment:
       DJANGO_SETTINGS_MODULE: "final_project.settings"
-    command: gunicorn --bind 0.0.0.0:8000 --workers 3 final_project.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 --timeout 120 --workers 3 final_project.wsgi:application
 
   db:
     image: postgres:16
@@ -26,10 +29,13 @@ services:
       POSTGRES_USER: ${YOUR_POSTGRESQL_USERNAME}
       POSTGRES_PASSWORD: ${YOUR_POSTGRESQL_PASSWORD}
       POSTGRES_DB: final_project
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+      POSTGRESQL_CHECKPOINT_TIMEOUT: "300"
+
     ports:
       - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # pg_data를 postgres_data로 변경
       - ./final_project.sql:/docker-entrypoint-initdb.d/final_project.sql
 
   redis:
@@ -44,8 +50,10 @@ services:
       - redis_data:/data
 
   worker:
+    user: 1000:1000  # 이 줄 추가
     build:
       context: .
+      dockerfile: Dockerfile  # Dockerfile 명시적 지정
     container_name: celery_worker
     networks:
       - model_default
@@ -63,6 +71,9 @@ services:
       - LANG=C.UTF-8
       - DISPLAY=:99.0
       - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - BASE_URL=${BASE_URL} # 추가
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS} # 추가
+
     command: celery -A final_project worker --loglevel=info
 
   beat:
@@ -81,12 +92,14 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: "final_project.settings"
+      - BASE_URL=${BASE_URL} # 추가
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS} # 추가
     command: celery -A final_project beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
 
 
+
 volumes:
-  pg_data:
+  postgres_data:
   redis_data:
 
 networks:
