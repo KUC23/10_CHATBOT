@@ -43,7 +43,7 @@
 
 ### 서비스 아키텍처
 
-<img src="image-10.png" width="500" height="500" alt="alt text">
+<img src="./images/image-10.png" width="500" height="500" alt="alt text">
 
 
 <br>
@@ -52,7 +52,7 @@
 ### ⚙️주 사용 기술
 
 <details>
-<summary><img src="image.png" width="20" height="20" /> Frontend / UI </summary>
+<summary><img src="./images/image.png" width="20" height="20" /> Frontend / UI </summary>
 <div markdown="1">
 
 - **React.js** : 사용자 인터페이스를 구축하기 위한 컴포넌트 기반의 JavaScript 라이브러리
@@ -61,7 +61,7 @@
 </details>
 
 <details>
-<summary><img src="image-1.png" width="20" height="20" /> Backend  </summary>
+<summary><img src="./images/image-1.png" width="20" height="20" /> Backend  </summary>
 <div markdown="1">
 
 - **Python** (3.10) : 다양한 라이브러리와 높은 확장성을 제공하는 백엔드 개발 언어
@@ -72,7 +72,7 @@
 </details>
 
 <details>
-<summary><img src="image-2.png" width="20" height="20" /> LLM  </summary>
+<summary><img src="./images/image-2.png" width="20" height="20" /> LLM  </summary>
 <div markdown="1">
 
 - **Gemini 1.5 flash** : 기사의 요약본 생성, 기사에서 단어 추출해 단어장에 저장
@@ -80,7 +80,7 @@
 </details>
 
 <details>
-<summary><img src="image-3.png" width="20" height="20" /> DataBase  </summary>
+<summary><img src="./images/image-3.png" width="20" height="20" /> DataBase  </summary>
 <div markdown="1">
 
 - **PostgreSQL** (16.6) : 사용자 데이터 및 설정 저장, 뉴스 데이터 영구 저장
@@ -91,7 +91,7 @@
 </details>
 
 <details>
-<summary><img src="image-4.png" width="20" height="20" /> Crawling  </summary>
+<summary><img src="./images/image-4.png" width="20" height="20" /> Crawling  </summary>
 <div markdown="1">
 
 - **Celery** (5.4.0) :  주기적인 작업 및 대규모 작업 처리에 유용한 비동기 작업 큐
@@ -104,7 +104,7 @@
 
 
 <details>
-<summary><img src="image-5.png" width="20" height="20" /> Deploy  </summary>
+<summary><img src="./images/image-5.png" width="20" height="20" /> Deploy  </summary>
 <div markdown="1">
 
 - **Docker** : 컨테이너 기반 가상화 플랫폼으로, 애플리케이션을 독립된 환경에서 효율적으로 빌드, 배포 및 실행
@@ -325,7 +325,7 @@ $ lsblk # xvda1 파티션을 보면 7.9GB에서 29GB 변경됨을 확인할 수 
 
 **✅ 문제 해결**
 
-![alt text](image-6.png)
+![alt text](./images/image-6.png)
 
 빌드 과정에서 멈추거나 하는 등의 문제 현상을 부분적으로 해결함.
 
@@ -342,7 +342,7 @@ $ lsblk # xvda1 파티션을 보면 7.9GB에서 29GB 변경됨을 확인할 수 
 
 프론트 엔드를 수정한 후에 `npm build` 를 통해 최적화 작업을 실행하였으나, 아래 이미지처럼 진행이 되지 않는 현상이 발생함.
 
-![alt text](image-7.png)
+![alt text](./images/image-7.png)
 
 **✅ 문제 원인**
 
@@ -352,13 +352,13 @@ ec2 서버 자체의 성능적 문제 혹은 서버 자체 문제로 build가 �
 
 로컬에서 서버와 같은 프론트엔드 환경을 만들어 로컬내에서 build를 실행하여 로컬에 build 파일을 작성함.
 
-![alt text](image-8.png)
+![alt text](./images/image-8.png)
 
 **✅ 문제 해결**
 
 로컬 내에서 파일을 작성한 후에,  scp 명령어와  .pem 키를 이용하여, 직접적으로 로컬에서 서버로 이동하는 방법을 선택한 후 빌드에 성공함.
 
-![alt text](image-9.png)
+![alt text](./images/image-9.png)
 
 </div>
 </details>
