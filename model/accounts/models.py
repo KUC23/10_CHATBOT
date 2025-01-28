@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
-from django.contrib.postgres.fields import JSONField 
+from materials.models import Vocabulary
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -39,6 +39,8 @@ class User(AbstractUser):
             ),
         ]
     )
+
+    vocabulary=models.ManyToManyField(Vocabulary, default=dict)
 
     is_active = models.BooleanField(default=True)
     is_social_connected = models.BooleanField(default=False)  
