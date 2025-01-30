@@ -135,8 +135,11 @@
 <br>
 
 ### 💭기술적 의사결정
+
+
+#### Gemini 1.5 flash와 다른 모델의 성능 비교
 <details>
-<summary><strong> Gemini 1.5 flash와 다른 모델의 성능 비교 </strong></summary>
+<summary><strong> 더보기 </strong></summary>
 <div markdown="1">
 - 
     
@@ -156,10 +159,10 @@
 </div>
 </details>
 
-
+#### RAG를 구성을 하지 않은 이유
 
 <details>
-<summary><strong> RAG를 구성을 하지 않은 이유 </strong></summary>
+<summary><strong> 더보기 </strong></summary>
 <div markdown="1">
     
     
@@ -172,10 +175,10 @@
 </details>
 
 
-
+#### 캐싱 전략
 
 <details>
-<summary><strong> 캐싱 전략  </strong></summary>
+<summary><strong> 더보기  </strong></summary>
 <div markdown="1">
     
     
@@ -198,10 +201,10 @@
 </details>
 
 
-
+#### 크롤링 및 데이터 전달 시 비동기 작업 도구 선택
 
 <details>
-<summary><strong> 크롤링 및 데이터 전달 시 비동기 작업 도구 선택  </strong></summary>
+<summary><strong> 더보기 </strong></summary>
 <div markdown="1">
     
 | **특징** | **Celery** | **Scarpy** | **BeautifulSoup+ Requests** | **AWS Lambda** |
@@ -222,9 +225,10 @@
 </div>
 </details>
 
+#### html → React 프론트엔드 교체
 
 <details>
-<summary><strong> html → React 프론트엔드 교체 </strong></summary>
+<summary><strong> 더보기 </strong></summary>
 <div markdown="1">
     
 **✅ 연동성 문제로 인한 기술 스택 변경 결정**
@@ -240,10 +244,10 @@
 </details>
 
 
-
+#### API 초당 요청 한도 초과
 
 <details>
-<summary><strong> API 초당 요청 한도 초과  </strong></summary>
+<summary><strong> 더보기 </strong></summary>
 <div markdown="1">
     
 기사의 요약과 단어 추출 과정에서 사용되는 언어 모델 API의 초당 요청 한도 초과를 피하기 위해 코드 내에 대기시간을 설정함.
@@ -268,14 +272,16 @@
 
 
 
-
-
+<br>
+<br>
 <br>
 
 ### ⚠️Trouble Shooting
 
+#### EC2 서버 에러
+
 <details>
-<summary>EC2 서버 에러  </summary>
+<summary> 더보기 </summary>
 <div markdown="1">
 
 **✅ 문제 발생 상황** 
@@ -334,8 +340,12 @@ $ lsblk # xvda1 파티션을 보면 7.9GB에서 29GB 변경됨을 확인할 수 
 </details>
 
 
+
+
+#### npm build 진행 불가
+
 <details>
-<summary> npm build 진행 불가   </summary>
+<summary> 더보기 </summary>
 <div markdown="1">
 
 **✅ 문제 발생 상황** 
@@ -363,6 +373,294 @@ ec2 서버 자체의 성능적 문제 혹은 서버 자체 문제로 build가 �
 </div>
 </details>
 
+
+#### 소셜 계정 동일 아이디 사용 불가
+
+<details>
+<summary> 더보기 </summary>
+<div markdown="1">
+
+- **소셜 계정 동일 아이디 사용 불가**
+    
+    
+    **✅ 문제 발생 상황** 
+    
+    가입한 회원은 카카오 계정으로 가입했고 아이디는 “my_id” {”provider”:”kakao”, “social_id”:”my_id”} 일 때,  
+    
+    아래와 같은 discord 계정으로 같은 아이디로 가입하려고 하면 `integrityerror` 발생
+    
+    {”provider”:”discord”, “social_id”:”my_id”} 
+    
+    **✅ 오류 메시지**
+    
+    ```java
+    IntegrityError at /api/v1/socials/link-social-account/
+    UNIQUE constraint failed: socials_customsocialaccount.uid
+    ```
+    
+    **✅ 문제 해결 아이디어**
+    
+    대부분 같은 사람이면 여러 social에 같은 아이디로 가입하는 경향이 많고, 만약
+    
+    {”provider”:”kakao”, “social_id”:”my_id”}이 사람과 {”provider”:”discord”, “social_id”:”my_id”} 이 사람이 다른 사람이라면 더욱 에러가 발생해서는 안됨.
+    
+    **✅ 기존코드**
+    
+    ```python
+    class CustomSocialAccount(models.Model):  
+        user = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE,
+            related_name="custom_social_accounts"
+        )
+        provider = models.CharField(max_length=50)
+        uid = models.CharField(max_length=255, unique=True)
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
+    
+        def __str__(self):
+            return f"{self.provider} - {self.user.username}"
+    ```
+    
+    ```python
+    class LinkSocialAccountView(APIView):
+        """
+        로그인한 사용자가 소셜계정을 연동할 때
+        """
+        permission_classes = [IsAuthenticated]
+    
+        def post(self, request):
+            provider = request.data.get('provider')
+            social_id = request.data.get('social_id')
+            user = request.user
+    
+            if CustomSocialAccount.objects.filter(user=user, provider=provider).exists():
+                return Response({"message": "이미 연결된 소셜 계정입니다."}, status=400)
+    
+            CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
+            if provider not in user.connected_social_providers:
+                user.connected_social_providers.append(provider)
+            user.is_social_connected = True
+            user.save()
+    
+            return Response({"message": f"{provider} 계정이 성공적으로 연결되었습니다."})
+    ```
+    
+    → models의 uid 설정이 `unique=True` 로 되어있는데 이 부분을 수정해야 함.
+    
+    → 그리고 중복검사를 할 때 user와 provider가 아닌 provider와 social_id를 받도록 해야함.
+    
+    **✅ 수정한 코드**
+    
+```python
+class CustomSocialAccount(models.Model):  
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="custom_social_accounts"
+    )
+    provider = models.CharField(max_length=50)
+    uid = models.CharField(max_length=255, unique=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('provider', 'uid')
+        
+    def __str__(self):
+        return f"{self.provider} - {self.user.username}"
+```
+    
+    → provider+uid 조합을 고유값으로 처리
+    
+    ```python
+    class LinkSocialAccountView(APIView):
+        """
+        로그인한 사용자가 소셜계정을 연동할 때
+        """
+        permission_classes = [IsAuthenticated]
+    
+        def post(self, request):
+            provider = request.data.get('provider')
+            social_id = request.data.get('social_id')
+            user = request.user
+    
+            if CustomSocialAccount.objects.filter(provider=provider, uid=social_id).exists():
+                return Response({
+                    "status": "error",
+                    "message": "이미 연결된 소셜 계정입니다."
+                    }, status=400)
+    
+            CustomSocialAccount.objects.create(user=user, provider=provider, uid=social_id)
+            if provider not in user.connected_social_providers:
+                user.connected_social_providers.append(provider)
+            user.is_social_connected = True
+            user.save()
+    
+            return Response({"message": f"{provider} 계정이 성공적으로 연결되었습니다."})
+    ```
+    
+    → 중복검사는 provider와 uid만 하도록 수정
+    
+    **✅ 문제 해결**
+    
+    - migration 후 실행했더니 동일한 아이디도 provider가 다르면 가입이 가능할 수 있게 됨.
+
+
+</div>
+</details>
+
+
+#### API 초당 요청 한도 초과
+
+<details>
+<summary> 더보기 </summary>
+<div markdown="1">
+
+# API 초당 요청 한도 초과
+
+## 문제 발생 상황
+기사를 요약하고 단어를 추출하는 과정에서 API 한도 초과 오류가 발생하는 것을 확인
+
+## 문제 해결 아이디어
+챗봇코드와 CNN 크롤링 코드를 통합하여 크롤링 후 챗봇에 바로 기사를 넘기도록 함
+
+## 오류 메시지
+```
+google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota)
+```
+
+## 기존 코드
+```python
+class learnChat:
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    chat = model.start_chat(history=[{'role':'user', 'parts':article.content}])
+    # fetch Gemini API Key
+    os.environ["GOOGLE_API_KEY"] = getpass("Gemini API Key:")
+
+    # create summary
+    def Summary():
+        summary = []
+        summary[0] = chat.send_message("입력된 내용을 영어로 요약해서 출력해줘. 요약문은 100자 이내여야 해.").text
+        while len(summary) > 400:
+            summary[0] = chat.send_message("너무 길어, 더 줄여줘.").text
+        summary[1] = chat.send_message("요약본을 한국어로 번역해줘").text
+        return summary
+
+    # create vocab
+    def vocab():
+        prompt = """
+        영문 요약본에서 적당한 난이도의 단어 3개만 찾아줘, 단어 옆에  한국어 뜻을 붙여줘. 단어와 뜻만 출력해. 
+        예시: 
+        collates 모으다
+        Crucial 중요한
+        Attributed 귀속된
+        """
+        response = chat.send_message(prompt)
+        response = response.text.split('\n')
+        response.pop()
+        vocab = {}
+        for i in range(len(response)):
+            v, m = response[i].split(maxsplit=1)
+            vocab[v] = m
+        return vocab
+```
+
+## 추정되는 원인
+1. CNN과 NYT 데이터를 처리하는 Celery 작업에서 챗봇 API를 호출할 때, 요청이 잦아 `ResourceExhausted` 오류발생
+2. 특히 요약과 번역 작업을 합쳐 실행하는 경우, 반복적인 요청으로 인해 Google Generative AI의 쿼터가 소진되는 것으로 추정
+
+## 구체적인 해결방법
+1. 요약과 번역을 별도의 함수로 분리
+2. 기존의 `while len(summary[0]) > 400` 루프를 제거하여 반복요청을 줄임
+3. `time.sleep(sleep)` 추가하여 요청간 대기시간 조정
+
+## 수정 코드
+```python
+import google.generativeai as genai
+from django.conf import settings
+import time
+
+genai.configure(api_key=settings.GEMINI_API_KEY)
+
+class learnChat:
+    def __init__(self, article_content):
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        self.chat = self.model.start_chat(history=[{'role': 'user', 'parts': article_content}])
+        self.sleep = 3
+
+    def summarize(self):
+        summary_english = self.chat.send_message("입력된 내용을 핵심만 80자 이내로 영어로 요약해줘.").text
+        return summary_english
+
+    def translate(self, text):
+        time.sleep(self.sleep)
+        translated_text = self.chat.send_message(f"다음 영어 텍스트를 한국어로 번역해줘: {text}").text
+        print(self.sleep)
+        return translated_text
+
+    def vocab(self):
+        time.sleep(self.sleep)
+        prompt = """
+        핵심 내용에서 적당한 난이도의 단어 3개만 찾아줘, 단어 옆에 한국어 뜻을 붙여줘.
+        단어와 뜻만 출력해.
+        """
+        response = self.chat.send_message(prompt)
+        vocab = {}
+        for line in response.text.split('\n'):
+            if line.strip():
+                word, meaning = line.split(maxsplit=1)
+                vocab[word] = meaning
+        print(self.sleep)
+        return vocab
+```
+
+## 문제 해결
+- `sleep`이 에러를 발생시키지 않는 최소 대기시간이 되게 테스트 진행
+- 최종적으로 `sleep=3`으로 결정하여 문제 해결
+
+|sleep (초)|fetch_and_store_cnn_news.delay()|fetch_and_store_nyt_news.delay()|
+|-|-|-|
+|15|O|O|
+|10|O|O|
+|5|O|O|
+|3|O|O|
+|2|O|X|
+|1|O|X|
+
+
+</div>
+</details>
+
+
  
 
  ### 향후 개선 계획
+
+#### 카카오톡 봇에서 제공할 수 있는 기능 추가
+
+<details>
+<summary> 더보기 </summary>
+<div markdown="1">
+
+헤드라인 뉴스 제공 추가
+타이틀에 번역 제목 추가 - 흥미도를 높이기 위해
+단어장기능, 퀴즈기능 추가 등등
+카카오톡 봇을 통해 보여드리거나 개선할 기능이 있다고 생각합니다.
+
+</div>
+</details>
+
+#### 메신저플랫폼 추가
+
+
+<details>
+<summary> 더보기 </summary>
+<div markdown="1">
+
+현재 카카오톡으로 서비스를 진행하고 있지만, 
+추후에 메신저 플랫폼의 추가하여, 
+서비스의 접근성을 높일 수 있게 하고 싶습니다.
+
+</div>
+</details>
