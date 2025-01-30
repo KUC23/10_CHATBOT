@@ -269,10 +269,6 @@
 
 
 
-
-
-
-<br>
 <br>
 <br>
 
@@ -665,8 +661,6 @@ class learnChat:
 </div>
 </details>
 
- <br>
- <br>
  <br>
  <br>
 
