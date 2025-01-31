@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..services.kakao_service import KakaoMessageService
+from rest_framework.permissions import IsAuthenticated
 import logging
 
 
@@ -51,6 +52,8 @@ class KakaoWebhookView(APIView):
 
 
 class KakaoWebhookView(APIView):
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
+
     def post(self, request):
         # 카카오톡 응답 기본 템플릿
         response = {
@@ -78,6 +81,19 @@ class KakaoWebhookView(APIView):
                         "text": message
                     }
                 })
+
+                user=request.user
+                # 뉴스 vocab을 사용자 vocabulary에 추가 (중복 제거)
+                user_vocab = user.vocabulary  # 기존 사용자 단어장 (딕셔너리)
+                article_vocab = article.vocab  # 뉴스 단어장 (딕셔너리)
+
+                for word, definition in article_vocab.items():
+                    if word not in user_vocab:  # 중복 방지
+                        user_vocab[word] = definition
+
+                user.vocabulary = user_vocab
+                user.save()
+
                 
             # 헤드라인 뉴스 5개 출력
             elif utterance == "뉴스":
@@ -91,6 +107,15 @@ class KakaoWebhookView(APIView):
                     return Response(response)
                 
                 
+            # 단어장 출력
+            elif utterance == "단어장":
+                user=request.user
+                
+                response['template']['outputs'].append({
+                    "simpleText": {
+                        "text": message
+                    }
+                })
 
             else:
                 # 해당 카테고리 뉴스가 없는 경우

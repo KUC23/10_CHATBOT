@@ -1,11 +1,7 @@
 from django.db import models
-from accounts.models import Category, User
+from accounts.models import Category, Vocabulary, User
 
-class Vocabulary(models.Model):
-    word = models.JSONField(default=dict, blank=True, unique=True)  # 단어는 고유값으로 관리
 
-    def __str__(self):
-        return self.word
 
 class News(models.Model):
     id = models.AutoField(primary_key=True)  

@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
-from materials.models import Vocabulary
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -19,6 +18,14 @@ class Category(models.Model):
             print(f"Category '{standard_category_name}' does not exist.")
             return None
 
+
+
+class Vocabulary(models.Model):
+    word = models.JSONField(default=dict, blank=True, unique=True)  # 단어는 고유값으로 관리
+
+    def __str__(self):
+        return self.word
+    
 
 
 class User(AbstractUser):
